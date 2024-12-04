@@ -1,0 +1,70 @@
+from machine import Pin, Timer
+import time
+
+# Pin definitions
+BTN1_PIN = 17  # GPIO 17
+BTN1_LED_PIN = 19  # GPIO 19
+BTN2_PIN = 0   # GPIO 0
+BTN2_LED_PIN = 1   # GPIO 1
+
+# Initialize LEDs and buttons
+btn1_led = Pin(BTN1_LED_PIN, Pin.OUT)
+btn2_led = Pin(BTN2_LED_PIN, Pin.OUT)
+
+btn1 = Pin(BTN1_PIN, Pin.IN, Pin.PULL_UP)  # Button 1 with pull-up
+btn2 = Pin(BTN2_PIN, Pin.IN, Pin.PULL_UP)  # Button 2 with pull-up
+
+# Global variables for button states
+btn1_on = False
+btn2_on = False
+clockwise = True  # Direction of LED rotation
+position = 1      # Position of "light" in the pattern
+
+# Button interrupt callback
+def button_callback(pin):
+    global btn1_on, btn2_on, clockwise
+    
+    if pin == btn1:  # Button 1 pressed
+        btn1_on = not btn1_on  # Toggle state
+        clockwise = True       # Set clockwise direction
+    elif pin == btn2:  # Button 2 pressed
+        btn2_on = not btn2_on  # Toggle state
+        clockwise = False      # Set counterclockwise direction
+
+# Attach interrupt handlers
+btn1.irq(trigger=Pin.IRQ_FALLING, handler=button_callback)
+btn2.irq(trigger=Pin.IRQ_FALLING, handler=button_callback)
+
+# Timer callback for light rotation
+def timer_callback(timer):
+    global position, clockwise
+
+    # Update LED states
+    if position == 1:
+        btn1_led.on()
+        btn2_led.off()
+    elif position == 2:
+        btn1_led.off()
+        btn2_led.on()
+    
+    # Update position based on direction
+    if clockwise:
+        position += 1
+    else:
+        position -= 1
+    
+    # Wrap around position
+    if position > 2:
+        position = 1
+    elif position < 1:
+        position = 2
+
+# Timer to handle periodic light updates
+light_timer = Timer()
+light_timer.init(period=500, mode=Timer.PERIODIC, callback=timer_callback)
+
+# Main loop (if needed for debugging or additional logic)
+while True:
+    # Print states for debugging
+    print(f"BTN1_ON: {btn1_on}, BTN2_ON: {btn2_on}, Position: {position}, Clockwise: {clockwise}")
+    time.sleep(0.5)
