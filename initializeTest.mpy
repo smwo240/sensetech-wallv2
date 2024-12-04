@@ -1,0 +1,14 @@
+from machine import Pin
+import time
+
+# Digital I/O setup
+led = Pin(25, Pin.OUT)  # Onboard LED
+button = Pin(15, Pin.IN, Pin.PULL_DOWN)  # Button with pull-down resistor
+
+# Simple loop toggling LED based on button press
+while True:
+    if button.value() == 1:
+        led.on()
+    else:
+        led.off()
+    time.sleep(0.1)  # 100ms delay
