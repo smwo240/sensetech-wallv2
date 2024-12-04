@@ -1,14 +1,19 @@
-#include "hardware/gpio.h"
-#include "hardware/structs/adc.h"
-
 from machine import ADC
 import time
 
-# ADC setup
-adc = ADC(26)  # Connect to GPIO26 (ADC0)
+# Initialize ADC on GPIO26 (ADC0)
+adc = ADC(26)  # Use pin GP26 for ADC input
 
 while True:
-    adc_value = adc.read_u16()  # Read 16-bit value (0-65535)
-    voltage = adc_value * 3.3 / 65535  # Convert to voltage
+    # Read raw ADC value (0-65535)
+    adc_value = adc.read_u16()
+    
+    # Convert raw ADC value to voltage (assuming 3.3V reference)
+    voltage = adc_value * 3.3 / 65535
+    
+    # Print the raw ADC value and calculated voltage
     print(f"ADC Value: {adc_value}, Voltage: {voltage:.2f} V")
+    
+    # Delay for readability
     time.sleep(1)
+
