@@ -1,3 +1,6 @@
+#include "hardware/gpio.h"
+#include "hardware/structs/pwm.h"
+
 from machine import Pin, PWM
 import time
 
