@@ -1,0 +1,15 @@
+from machine import Pin, PWM
+import time
+
+# PWM setup
+pwm_pin = PWM(Pin(16))  # PWM on GPIO16
+pwm_pin.freq(1000)      # Set frequency to 1 kHz
+
+# Gradually change duty cycle
+while True:
+    for duty in range(0, 65535, 1000):  # Increase brightness
+        pwm_pin.duty_u16(duty)
+        time.sleep(0.01)
+    for duty in range(65535, 0, -1000):  # Decrease brightness
+        pwm_pin.duty_u16(duty)
+        time.sleep(0.01)
