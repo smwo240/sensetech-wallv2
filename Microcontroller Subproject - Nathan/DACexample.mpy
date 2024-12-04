@@ -1,15 +1,26 @@
-#include "hardware/gpio.h"
-#include "hardware/structs/pwm.h"
-
-# Simulate DAC using PWM
-dac_pin = PWM(Pin(17))  # Simulated DAC on GPIO17
-dac_pin.freq(1000)      # Set frequency to 1 kHz
-
-# Generate a sine wave
+from machine import Pin, PWM
+import time
 import math
 
-while True:
-    for i in range(100):  # 100 steps
-        value = int((math.sin(i / 100 * 2 * math.pi) + 1) * 32767.5)  # Scale to 0-65535
-        dac_pin.duty_u16(value)
-        time.sleep(0.01)
+# Initialize PWM on GPIO17
+dac_pin = PWM(Pin(17))  # Use pin GP17 for simulated DAC
+dac_pin.freq(1000)      # Set PWM frequency to 1 kHz
+
+# Function to generate a sine wave
+def generate_sine_wave(steps=100, amplitude=32767):
+    """
+    Generates a sine wave using PWM to simulate DAC.
+    
+    :param steps: Number of steps for the sine wave (resolution).
+    :param amplitude: Amplitude of the sine wave (max duty cycle value).
+    """
+    while True:
+        for i in range(steps):
+            # Calculate sine wave value, scale to PWM range (0-65535)
+            value = int((math.sin(i / steps * 2 * math.pi) + 1) * amplitude)
+            dac_pin.duty_u16(value)  # Set duty cycle
+            time.sleep(0.01)  # Delay between steps
+
+# Run sine wave generation
+generate_sine_wave()
+
