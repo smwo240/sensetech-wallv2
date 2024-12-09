@@ -1,0 +1,36 @@
+from machine import Pin, PWM
+import time
+
+# Pin definitions
+BUTTON_PIN = 15  # GPIO15 for the button input
+FAN_PIN = 16     # GPIO16 for fan control (PWM)
+
+# Initialize button with pull-up resistor
+button = Pin(BUTTON_PIN, Pin.IN, Pin.PULL_UP)
+
+# Initialize fan PWM
+fan_pwm = PWM(Pin(FAN_PIN))
+fan_pwm.freq(25000)  # PWM frequency for fan control (25 kHz is common for fans)
+fan_pwm.duty_u16(0)  # Fan off (0% duty cycle)
+
+# Function to turn the fan on
+def turn_fan_on():
+    fan_pwm.duty_u16(32768)  # 50% duty cycle (adjust if needed)
+    print("Fan is ON")
+
+# Function to turn the fan off
+def turn_fan_off():
+    fan_pwm.duty_u16(0)  # 0% duty cycle
+    print("Fan is OFF")
+
+# Main loop
+while True:
+    # Check if the button is pressed
+    if not button.value():  # Button is active low
+        print("Button pressed!")
+        turn_fan_on()
+        time.sleep(20)  # Keep the fan on for 20 seconds
+        turn_fan_off()
+    
+    # Small delay to debounce the button
+    time.sleep(0.1)
