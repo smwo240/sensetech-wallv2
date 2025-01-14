@@ -20,7 +20,7 @@
 #define BTN1_PIN 28
 #define BTN2_PIN 27
 #define BTN3_PIN 26
-#define BTN4_PIN 22
+#define BTN4_PIN 17 // was 22 - bad connection
 #define BTN5_PIN 21
 #define BTN6_PIN 20
 #define BTN7_PIN 19
@@ -47,54 +47,62 @@ int64_t alarm_callback(alarm_id_t id, void *user_data) {
 
 void gpio_callback(uint gpio, uint32_t events) {
     // Interrupt routines for when a button is pressed on the face plate.
-    if (gpio == BTN1_PIN && !btn_active[0]) {
+    if (gpio == BTN1_PIN) {
+    if (!btn_active[0]) {
         btn_active[0] = true;
-        gpio_put(BTN1_LED_PIN, true);
         // play activation sound (?)
-
-    } 
-    else if (gpio == BTN2_PIN && !btn_active[1]) {
+    }
+    gpio_put(BTN1_LED_PIN, true);
+} 
+else if (gpio == BTN2_PIN) {
+    if (!btn_active[1]) {
         btn_active[1] = true;
-        gpio_put(BTN2_LED_PIN, true);
         // play activation sound
-
     }
-    else if (gpio == BTN3_PIN && !btn_active[2]) {
+    gpio_put(BTN2_LED_PIN, true);
+}
+else if (gpio == BTN3_PIN) {
+    if (!btn_active[2]) {
         btn_active[2] = true;
-        gpio_put(BTN3_LED_PIN, true);
         // play activation sound
-
     }
-    else if (gpio == BTN4_PIN && !btn_active[3]) {
+    gpio_put(BTN3_LED_PIN, true);
+}
+else if (gpio == BTN4_PIN) {
+    if (!btn_active[3]) {
         btn_active[3] = true;
-        gpio_put(BTN4_LED_PIN, true);
         // play activation sound
-
     }
-    else if (gpio == BTN5_PIN && !btn_active[4]) {
+    gpio_put(BTN4_LED_PIN, true);
+}
+else if (gpio == BTN5_PIN) {
+    if (!btn_active[4]) {
         btn_active[4] = true;
-        gpio_put(BTN5_LED_PIN, true);
         // play activation sound
-
     }
-    else if (gpio == BTN6_PIN && !btn_active[5]) {
+    gpio_put(BTN5_LED_PIN, true);
+}
+else if (gpio == BTN6_PIN) {
+    if (!btn_active[5]) {
         btn_active[5] = true;
-        gpio_put(BTN6_LED_PIN, true);
         // play activation sound
-
     }
-    else if (gpio == BTN7_PIN && !btn_active[6]) {
+    gpio_put(BTN6_LED_PIN, true);
+}
+else if (gpio == BTN7_PIN) {
+    if (!btn_active[6]) {
         btn_active[6] = true;
-        gpio_put(BTN7_LED_PIN, true);
         // play activation sound
-
     }
-    else if (gpio == BTN8_PIN && !btn_active[7]) {
+    gpio_put(BTN7_LED_PIN, true);
+}
+else if (gpio == BTN8_PIN) {
+    if (!btn_active[7]) {
         btn_active[7] = true;
-        gpio_put(BTN8_LED_PIN, true);
         // play activation sound
-
     }
+    gpio_put(BTN8_LED_PIN, true);
+}
     else {
         // error, shouldn't be possible with hardware
         // debug - light up all lights for 2 s
@@ -200,11 +208,15 @@ int main()
                             // false = counterclockwise
 
     while (true) {
-        // turn off previous position 
-        gpio_put(position, false);
+        if (!btn_active[position]) {
+            // turn off previous position 
+            gpio_put(position, false);
+
+            // do direction swap function - future implmentation
+        }
         
         if (clockwise) { 
-            position = (position + 1) % 8;}   // iterate clockwise (8 % 8 = 0)
+            position = (position + 1) % 8; }   // iterate clockwise (8 % 8 = 0)
         else { 
             position = (position - 1 + 8) % 8; } // iterate counterclockwise (substitute for -1 % 8 = 7)
 
@@ -219,9 +231,9 @@ int main()
             btn_active[position] = false;
 
             // button starts ON if collision occurs
-            for (int i = 1; i < 5; i++) {
+            for (int i = 1; i < 7; i++) {
                 gpio_put(position, i % 2 == 0 );
-                sleep_ms(250);
+                sleep_ms(150);
             }
             gpio_put(position,true); // backup turn button back on
         }
@@ -229,7 +241,7 @@ int main()
             // do nothing, continue to next loop
         }
 
-        sleep_ms(500); // speed of the rotation pattern
+        sleep_ms(400); // speed of the rotation pattern
 
     }
 }
