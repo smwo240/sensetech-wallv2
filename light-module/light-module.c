@@ -47,7 +47,7 @@ int64_t alarm_callback(alarm_id_t id, void *user_data) {
 
 void gpio_callback(uint gpio, uint32_t events) {
     // Interrupt routines for when a button is pressed on the face plate.
-    if (gpio == BTN1_PIN) {
+if (gpio == BTN1_PIN) {
     if (!btn_active[0]) {
         btn_active[0] = true;
         // play activation sound (?)
@@ -208,20 +208,21 @@ int main()
                             // false = counterclockwise
 
     while (true) {
+
+        // Check for off-timing with button activiation
         if (!btn_active[position]) {
             // turn off previous position 
             gpio_put(position, false);
-
-            // do direction swap function - future implmentation
         }
-        
+
+        /* ========== Move to new position =============== */
         if (clockwise) { 
             position = (position + 1) % 8; }   // iterate clockwise (8 % 8 = 0)
-        else { 
+            else { 
             position = (position - 1 + 8) % 8; } // iterate counterclockwise (substitute for -1 % 8 = 7)
 
-        // light up new position
-        gpio_put(position, true);
+            // light up new position
+            gpio_put(position, true);
 
         /*========= Check if button is active at new position ========= */
         if (btn_active[position]) {
