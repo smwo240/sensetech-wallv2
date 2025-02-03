@@ -35,20 +35,21 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(light-module light-module.c )
+add_executable(light-module light-module.c mp3.c )
 
 pico_set_program_name(light-module "light-module")
 pico_set_program_version(light-module "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(light-module 0)
-pico_enable_stdio_usb(light-module 0)
+pico_enable_stdio_usb(light-module 1)
 
 # Add the standard library to the build
 target_link_libraries(light-module
         pico_stdlib
         hardware_adc
-        hardware_pwm)
+        hardware_pwm
+        hardware_i2c)
 
 # Add the standard include files to the build
 target_include_directories(light-module PRIVATE

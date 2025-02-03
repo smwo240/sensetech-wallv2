@@ -4,7 +4,10 @@
             "name": "Pico",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${userHome}/.pico-sdk/sdk/2.1.0/**"
+                "${userHome}/.pico-sdk/sdk/2.1.0/**",
+                "/Users/shanewojcicki/.pico-sdk/sdk/2.1.0/src/rp2_common/hardware_uart/include",
+                "/Users/shanewojcicki/.pico-sdk/sdk/2.1.0/src/rp2_common/hardware_gpio/include",
+                "/Users/shanewojcicki/.pico-sdk/sdk/2.1.0/src/common/pico_stdlib_headers/include"
             ],
             "forcedInclude": [
                 "${userHome}/.pico-sdk/sdk/2.1.0/src/common/pico_base_headers/include/pico.h",

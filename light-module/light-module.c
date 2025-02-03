@@ -1,11 +1,19 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 #include "pico/stdlib.h"
 #include "hardware/timer.h"
 #include "hardware/clocks.h"
 #include "hardware/gpio.h"
 #include "hardware/adc.h"
 #include "hardware/pwm.h"
+#include "hardware/i2c.h"
 #include "hardware/uart.h"
+#include "mp3.h"
+
+// LED PIN
+#define LED_PIN 25
+
 // LED GPIO
 #define BTN1_LED_PIN 0
 #define BTN2_LED_PIN 1
@@ -32,13 +40,14 @@
 // When a button is pressed, it lights up and stays lit until the position variable reaches the corresponding button and
 // then the direction of the position changes. This should work for multiple buttons but we can set a limit on the number of buttons "active".
 
-// global variables
+// Global Variables
 // Button states for light module logic - activated from interrupt handler
-// This is idependent of the light being lit up, this is the state that matches when a button has been pressed
+// This is independent of the light being lit up, this is the state that matches when a button has been pressed
 // and the looping behavior is waiting for the position to match a btnN_on
 
 // one off of btn# because of initial oversights  btn# = index + 1
 bool btn_active[8] = {false, false, false, false, false, false, false, false};
+
 
 int64_t alarm_callback(alarm_id_t id, void *user_data) {
     // Put your timeout handler code in here
@@ -110,16 +119,17 @@ else if (gpio == BTN8_PIN) {
     }
 }
 
-
 int main()
 {
     stdio_init_all();
+    gpio_init(LED_PIN);
+    gpio_set_dir(LED_PIN, GPIO_OUT);
+    gpio_put(LED_PIN, true);
 
     // Timer example code - This example fires off the callback after 2000ms
     add_alarm_in_ms(2000, alarm_callback, NULL, false);
 
     // Initialize GPIO - all buttons set up for negative logic on push (pull-up resistors and interrupts on falling edge)
-
     // BTN1_LED_PIN
     gpio_init(BTN1_LED_PIN);
     gpio_set_dir(BTN1_LED_PIN, GPIO_OUT);
@@ -129,7 +139,6 @@ int main()
     gpio_set_dir(BTN1_PIN,GPIO_IN);
     gpio_pull_up(BTN1_PIN);
     gpio_set_irq_enabled_with_callback(BTN1_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_callback); // enable interrupts
-
     // BTN2_LED_PIN
     gpio_init(BTN2_LED_PIN);
     gpio_set_dir(BTN2_LED_PIN, GPIO_OUT);
@@ -207,9 +216,14 @@ int main()
     bool clockwise = true;  // true = clockwise
                             // false = counterclockwise
 
-    while (true) {
+    // initialize tfplayer
+    sleep_ms(5000);
+    mp3_initialize();
+    mp3_set_volume(22);
+    mp3_query_status();
 
-        // Check for off-timing with button activiation
+    while (true) {
+        // Check for off-timing with button activation
         if (!btn_active[position]) {
             // turn off previous position 
             gpio_put(position, false);
@@ -226,7 +240,8 @@ int main()
 
         /*========= Check if button is active at new position ========= */
         if (btn_active[position]) {
-            // play a sound (once configured)
+            // play a sound
+            mp3_play_sound((uint8_t) rand() % 4);
 
             clockwise = !clockwise; // toggle direction
             btn_active[position] = false;
@@ -243,6 +258,5 @@ int main()
         }
 
         sleep_ms(400); // speed of the rotation pattern
-
     }
 }
