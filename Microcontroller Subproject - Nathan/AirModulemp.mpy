@@ -1,7 +1,7 @@
 from machine import Pin, PWM
 import time
 
-# Pin definitions
+# Pin definitions for GPIO
 BUTTON_PIN = 15  # GPIO15 for the button input
 FAN_PIN = 16     # GPIO16 for fan control (PWM)
 
