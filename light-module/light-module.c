@@ -15,24 +15,24 @@
 #define LED_PIN 25
 
 // LED GPIO
-#define BTN1_LED_PIN 0
-#define BTN2_LED_PIN 1
-#define BTN3_LED_PIN 2
-#define BTN4_LED_PIN 3
-#define BTN5_LED_PIN 4
-#define BTN6_LED_PIN 5
-#define BTN7_LED_PIN 6
-#define BTN8_LED_PIN 7
+#define BTN1_LED_PIN 1
+#define BTN2_LED_PIN 3
+#define BTN3_LED_PIN 5
+#define BTN4_LED_PIN 7
+#define BTN5_LED_PIN 9
+#define BTN6_LED_PIN 11
+#define BTN7_LED_PIN 13
+#define BTN8_LED_PIN 15
 
 // BUTTON GPIO
-#define BTN1_PIN 28
-#define BTN2_PIN 27
-#define BTN3_PIN 26
-#define BTN4_PIN 17 // was 22 - bad connection
-#define BTN5_PIN 21
-#define BTN6_PIN 20
-#define BTN7_PIN 19
-#define BTN8_PIN 18
+#define BTN1_PIN 0
+#define BTN2_PIN 2
+#define BTN3_PIN 4
+#define BTN4_PIN 6
+#define BTN5_PIN 8
+#define BTN6_PIN 10
+#define BTN7_PIN 12
+#define BTN8_PIN 14
 
 // ADC
 #define ADC_CLK_DIV 1000 // temp value
