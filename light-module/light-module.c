@@ -217,7 +217,6 @@ int main()
                             // false = counterclockwise
 
     // initialize tfplayer
-    sleep_ms(5000);
     mp3_initialize();
     mp3_set_volume(22);
     mp3_query_status();
