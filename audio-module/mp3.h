@@ -4,7 +4,15 @@
 // AUDIO LIBRARY
 typedef enum {
     BUBBLEPOP,
-    CLAIRDELUNE
+    CLAIRDELUNE,
+    C5,
+    D5,
+    E5,
+    F5,
+    G5,
+    A5,
+    B5,
+    C6
 } SOUNDS;
 
 typedef struct {
@@ -14,7 +22,15 @@ typedef struct {
 
 static const sound_id MP3_LIBRARY[] = {
     [BUBBLEPOP] = { .folder = 0x01, .file = 0x01 },
-    [CLAIRDELUNE] = { .folder = 0x01, .file = 0x02 }
+    [CLAIRDELUNE] = { .folder = 0x01, .file = 0x02 },
+    [C5] = { .folder = 0x01, .file = 0x03 },
+    [D5] = { .folder = 0x01, .file = 0x04 },
+    [E5] = { .folder = 0x01, .file = 0x05 },
+    [F5] = { .folder = 0x01, .file = 0x06 },
+    [G5] = { .folder = 0x01, .file = 0x07 },
+    [A5] = { .folder = 0x01, .file = 0x08 },
+    [B5] = { .folder = 0x01, .file = 0x09 },
+    [C6] = { .folder = 0x01, .file = 0x0A }
 };
 
 void mp3_initialize();

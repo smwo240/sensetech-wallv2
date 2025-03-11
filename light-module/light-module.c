@@ -59,56 +59,56 @@ void gpio_callback(uint gpio, uint32_t events) {
 if (gpio == BTN1_PIN) {
     if (!btn_active[0]) {
         btn_active[0] = true;
-        // play activation sound (?)
+        mp3_play_sound(C5); // play activation sound (?)
     }
     gpio_put(BTN1_LED_PIN, true);
 } 
 else if (gpio == BTN2_PIN) {
     if (!btn_active[1]) {
         btn_active[1] = true;
-        // play activation sound
+        mp3_play_sound(D5); // play activation sound
     }
     gpio_put(BTN2_LED_PIN, true);
 }
 else if (gpio == BTN3_PIN) {
     if (!btn_active[2]) {
         btn_active[2] = true;
-        // play activation sound
+        mp3_play_sound(E5); // play activation sound
     }
     gpio_put(BTN3_LED_PIN, true);
 }
 else if (gpio == BTN4_PIN) {
     if (!btn_active[3]) {
         btn_active[3] = true;
-        // play activation sound
+        mp3_play_sound(F5); // play activation sound
     }
     gpio_put(BTN4_LED_PIN, true);
 }
 else if (gpio == BTN5_PIN) {
     if (!btn_active[4]) {
         btn_active[4] = true;
-        // play activation sound
+        mp3_play_sound(G5); // play activation sound
     }
     gpio_put(BTN5_LED_PIN, true);
 }
 else if (gpio == BTN6_PIN) {
     if (!btn_active[5]) {
         btn_active[5] = true;
-        // play activation sound
+        mp3_play_sound(A5); // play activation sound
     }
     gpio_put(BTN6_LED_PIN, true);
 }
 else if (gpio == BTN7_PIN) {
     if (!btn_active[6]) {
         btn_active[6] = true;
-        // play activation sound
+        mp3_play_sound(B5); // play activation sound
     }
     gpio_put(BTN7_LED_PIN, true);
 }
 else if (gpio == BTN8_PIN) {
     if (!btn_active[7]) {
         btn_active[7] = true;
-        // play activation sound
+        mp3_play_sound(C6); // play activation sound
     }
     gpio_put(BTN8_LED_PIN, true);
 }
@@ -218,7 +218,7 @@ int main()
 
     // initialize tfplayer
     mp3_initialize();
-    mp3_set_volume(22);
+    mp3_set_volume(20);
     mp3_query_status();
 
     while (true) {
@@ -240,7 +240,7 @@ int main()
         /*========= Check if button is active at new position ========= */
         if (btn_active[position]) {
             // play a sound
-            mp3_play_sound((uint8_t) rand() % 4);
+            mp3_play_sound(BUBBLEPOP);
 
             clockwise = !clockwise; // toggle direction
             btn_active[position] = false;
