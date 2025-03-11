@@ -8,24 +8,24 @@
 #define LED_PIN 25
 
 // BUTTON LED GPIO
-#define BTN1_LED_PIN 0
-#define BTN2_LED_PIN 1
-#define BTN3_LED_PIN 2
-#define BTN4_LED_PIN 3
-#define BTN5_LED_PIN 4
-#define BTN6_LED_PIN 5
-#define BTN7_LED_PIN 6
-#define BTN8_LED_PIN 7
+#define BTN1_LED_PIN 17
+#define BTN2_LED_PIN 18
+#define BTN3_LED_PIN 19
+#define BTN4_LED_PIN 20
+#define BTN5_LED_PIN 21
+#define BTN6_LED_PIN 22
+#define BTN7_LED_PIN 26
+#define BTN8_LED_PIN 27
 
 // BUTTON GPIO
-#define BTN1_PIN 28
-#define BTN2_PIN 27
-#define BTN3_PIN 26
-#define BTN4_PIN 22
-#define BTN5_PIN 21
-#define BTN6_PIN 20
-#define BTN7_PIN 19
-#define BTN8_PIN 18
+#define BTN1_PIN 2
+#define BTN2_PIN 3
+#define BTN3_PIN 4
+#define BTN4_PIN 5
+#define BTN5_PIN 6
+#define BTN6_PIN 7
+#define BTN7_PIN 8
+#define BTN8_PIN 9
 
 // button states, btn# = index + 1
 bool btn_active[8] = {false, false, false, false, false, false, false, false};
@@ -37,42 +37,42 @@ uint64_t btn_time[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 void gpio_callback(uint gpio, uint32_t events) {
     // Interrupt routine for when a button is pressed on the face plate.
     if (gpio == BTN1_PIN) {
-        mp3_play_sound((uint8_t)(rand() % 1));
+        mp3_play_sound(C5);
         gpio_put(BTN1_LED_PIN, true);
         btn_active[0] = true;
         btn_time[0] = time_us_64();  // record timestamp
     } else if (gpio == BTN2_PIN) {
-        mp3_play_sound((uint8_t)(rand() % 1));
+        mp3_play_sound(D5);
         gpio_put(BTN2_LED_PIN, true);
         btn_active[1] = true;
         btn_time[1] = time_us_64();  // record timestamp
     } else if (gpio == BTN3_PIN) {
-        mp3_play_sound((uint8_t)(rand() % 1));
+        mp3_play_sound(E5);
         gpio_put(BTN3_LED_PIN, true);
         btn_active[2] = true;
         btn_time[2] = time_us_64();  // record timestamp
     } else if (gpio == BTN4_PIN) {
-        mp3_play_sound((uint8_t)(rand() % 1));
+        mp3_play_sound(F5);
         gpio_put(BTN4_LED_PIN, true);
         btn_active[3] = true;
         btn_time[3] = time_us_64();  // record timestamp
     } else if (gpio == BTN5_PIN) {
-        mp3_play_sound((uint8_t)(rand() % 1));
+        mp3_play_sound(G5);
         gpio_put(BTN5_LED_PIN, true);
         btn_active[4] = true;
         btn_time[4] = time_us_64();  // record timestamp
     } else if (gpio == BTN6_PIN) {
-        mp3_play_sound((uint8_t)(rand() % 1));
+        mp3_play_sound(A5);
         gpio_put(BTN6_LED_PIN, true);
         btn_active[5] = true;
         btn_time[5] = time_us_64();  // record timestamp
     } else if (gpio == BTN7_PIN) {
-        mp3_play_sound((uint8_t)(rand() % 1));
+        mp3_play_sound(B5);
         gpio_put(BTN7_LED_PIN, true);
         btn_active[6] = true;
         btn_time[6] = time_us_64();  // record timestamp
     } else if (gpio == BTN8_PIN) {
-        mp3_play_sound((uint8_t)(rand() % 1));
+        mp3_play_sound(C6);
         gpio_put(BTN8_LED_PIN, true);
         btn_active[7] = true;
         btn_time[7] = time_us_64();  // record timestamp
@@ -100,8 +100,10 @@ int main()
 
     // initialize tfplayer
     mp3_initialize();
-    mp3_set_volume(30);
+    mp3_set_volume(16);
     mp3_query_status();
+
+    mp3_play_sound(CLAIRDELUNE);
 
     while (true) {
         if (btn_active[0] == true && (time_us_64() - btn_time[0] >= DELAY_US)) {
