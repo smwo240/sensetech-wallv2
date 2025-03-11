@@ -7,7 +7,6 @@
 #include "hardware/gpio.h"
 #include "hardware/adc.h"
 #include "hardware/pwm.h"
-#include "hardware/i2c.h"
 #include "hardware/uart.h"
 #include "mp3.h"
 
@@ -15,27 +14,24 @@
 #define LED_PIN 25
 
 // LED GPIO
-#define BTN1_LED_PIN 1
-#define BTN2_LED_PIN 3
-#define BTN3_LED_PIN 5
-#define BTN4_LED_PIN 7
-#define BTN5_LED_PIN 9
-#define BTN6_LED_PIN 11
-#define BTN7_LED_PIN 13
-#define BTN8_LED_PIN 15
+#define BTN1_LED_PIN 0
+#define BTN2_LED_PIN 1
+#define BTN3_LED_PIN 2
+#define BTN4_LED_PIN 3
+#define BTN5_LED_PIN 4
+#define BTN6_LED_PIN 5
+#define BTN7_LED_PIN 6
+#define BTN8_LED_PIN 7
 
 // BUTTON GPIO
-#define BTN1_PIN 0
-#define BTN2_PIN 2
-#define BTN3_PIN 4
-#define BTN4_PIN 6
-#define BTN5_PIN 8
-#define BTN6_PIN 10
-#define BTN7_PIN 12
-#define BTN8_PIN 14
-
-// ADC
-#define ADC_CLK_DIV 1000 // temp value
+#define BTN1_PIN 28
+#define BTN2_PIN 27
+#define BTN3_PIN 26
+#define BTN4_PIN 22
+#define BTN5_PIN 21
+#define BTN6_PIN 20
+#define BTN7_PIN 19
+#define BTN8_PIN 18
 
 // When a button is pressed, it lights up and stays lit until the position variable reaches the corresponding button and
 // then the direction of the position changes. This should work for multiple buttons but we can set a limit on the number of buttons "active".
@@ -56,6 +52,7 @@ int64_t alarm_callback(alarm_id_t id, void *user_data) {
 
 void gpio_callback(uint gpio, uint32_t events) {
     // Interrupt routines for when a button is pressed on the face plate.
+    printf("Interrupt triggered");
 if (gpio == BTN1_PIN) {
     if (!btn_active[0]) {
         btn_active[0] = true;
@@ -121,6 +118,7 @@ else if (gpio == BTN8_PIN) {
 
 int main()
 {
+    printf("Main begin");
     stdio_init_all();
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
@@ -128,6 +126,9 @@ int main()
 
     // Timer example code - This example fires off the callback after 2000ms
     add_alarm_in_ms(2000, alarm_callback, NULL, false);
+
+
+    #pragma region // GPIO INITIALIZATION
 
     // Initialize GPIO - all buttons set up for negative logic on push (pull-up resistors and interrupts on falling edge)
     // BTN1_LED_PIN
@@ -202,17 +203,10 @@ int main()
     gpio_pull_up(BTN8_PIN);
     gpio_set_irq_enabled(BTN8_PIN, GPIO_IRQ_EDGE_FALL, true);
 
-    // ADC Example
-    adc_init();
-    adc_gpio_init(31);
-    adc_select_input(0);
-    //adc_fifo_setup(bool en, bool dreq_en, uint16_t dreq_thresh,
-    //               bool err_in_fifo, bool byte_shift)
-    adc_fifo_setup(true,false,1,false,true);
-    adc_set_clkdiv(ADC_CLK_DIV);
+    #pragma endregion 
 
     // loop to model simple behavior.
-    uint32_t position = 1; // position of "light" moving from button to button in circular pattern
+    int position = 1; // position of "light" moving from button to button in circular pattern
     bool clockwise = true;  // true = clockwise
                             // false = counterclockwise
 
@@ -258,4 +252,5 @@ int main()
 
         sleep_ms(400); // speed of the rotation pattern
     }
+
 }

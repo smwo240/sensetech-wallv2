@@ -1,5 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 #include "pico/stdlib.h"
+#include "hardware/uart.h"
+#include "hardware/i2c.h"
 #include "hardware/pwm.h"
 #include "hardware/adc.h"
 #include "hardware/clocks.h"
@@ -10,6 +14,8 @@
 
 int main()
 {
+    stdio_init_all(); // serial comm for debug
+
     // Slide potentiometer connected to VCC, GND, and GPIO26
     // ADC on GPIO26 / ADC0
     adc_init();
@@ -50,12 +56,18 @@ int main()
 
     uint16_t result;
 
+    pwm_set_chan_level(motor_slice_num, PWM_CHAN_A, 0.0);
     while (1) 
     {
+        // state machine redesign so that sound logic works better (detect transition from off to on / on to off)
+
         // 12-bit value from 0-3.3V -> 0-4096
         result = adc_read();
-
+        printf("ADC In: %d", result);
+        pwm_set_chan_level(led_slice_num, PWM_CHAN_B, (result/4096.0)*period);
+        
         // set motor and output led pwm output depending on POT position
+        /*
         if ((result/4096.0) >= .75) {
             pwm_set_chan_level(led_slice_num, PWM_CHAN_B, period);
             pwm_set_chan_level(motor_slice_num, PWM_CHAN_A, period);
@@ -72,6 +84,8 @@ int main()
             pwm_set_chan_level(led_slice_num, PWM_CHAN_B, 0.0*period);
             pwm_set_chan_level(motor_slice_num, PWM_CHAN_A, 0.0*period);
         }
+        */
+        sleep_ms(250); // sleep!
     }
 
 }

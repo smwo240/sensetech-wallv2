@@ -7,6 +7,7 @@
 #include "hardware/pwm.h"
 #include "hardware/adc.h"
 #include "hardware/clocks.h"
+#include <stdio.h>
 
 int main() {
     // Turn default LED on to show power is on
@@ -15,6 +16,8 @@ int main() {
     gpio_set_dir(LED_PIN, GPIO_OUT);
     gpio_put(LED_PIN, 1);
     */
+
+    stdio_init_all();
 
     // ADC on GPIO 26 / ADC 0
     adc_init();
@@ -57,6 +60,7 @@ int main() {
     double multiplier = 0.1;
     uint16_t result;
     uint16_t adj_result;
+    char str[50];
 
        while (1) { 
       // 12-bit conversion, VREF = 3.3 V  
@@ -64,7 +68,7 @@ int main() {
        result = adc_read(); 
        // adj_result = 
       // Set PWM output duty cycle
-       pwm_set_chan_level(slice_num, PWM_CHAN_B, period*result/4096);
+       pwm_set_chan_level(slice_num, PWM_CHAN_B, period*multiplier/4096);
        pwm_set_chan_level(slice_num2, PWM_CHAN_A, period*result/4096);
 
         // set motor on/off depending on switch state
@@ -81,6 +85,9 @@ int main() {
 
        if (multiplier >= 0.9)
         multiplier = 0.1;
+
+        sprintf(str,"%lf",multiplier);
+        printf(str);
 
        sleep_ms(100);
 
