@@ -27,12 +27,13 @@ int main()
     uint motor_slice_num = pwm_gpio_to_slice_num(OUTPUT_MOTORCTRL_GPIO);
 
     // set clock divider to 4, then frequency is 125/4 = 31.25 MHz
-    // Minimize this to reduce power consumption.
+    // Minimize this to reduce power consumption. [WIP]
     pwm_set_clkdiv(led_slice_num, 4);
     pwm_set_clkdiv(motor_slice_num, 4);
 
     // Set period number of cycles for ... Hz output
     // period = Clk/cycle\\.
+    // [WIP]
     int period = 1250;
     pwm_set_wrap(led_slice_num, period);
     pwm_set_wrap(motor_slice_num, period);
