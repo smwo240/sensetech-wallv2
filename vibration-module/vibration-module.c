@@ -44,7 +44,7 @@ int main()
     pwm_set_wrap(led_slice_num, period);
     pwm_set_wrap(motor_slice_num, period);
 
-    // WIP - need to determine proper clock divider
+    // WIP - need to determine proper clock divider - i think this is fine
 
     // Default duty cycle of all PWM outputs to 0
     pwm_set_chan_level(led_slice_num, PWM_CHAN_B, 0);
@@ -64,10 +64,10 @@ int main()
         // 12-bit value from 0-3.3V -> 0-4096
         result = adc_read();
         printf("ADC In: %d", result);
-        pwm_set_chan_level(led_slice_num, PWM_CHAN_B, (result/4096.0)*period);
+        // pwm_set_chan_level(led_slice_num, PWM_CHAN_B, (result/4096.0)*period);
         
         // set motor and output led pwm output depending on POT position
-        /*
+        
         if ((result/4096.0) >= .75) {
             pwm_set_chan_level(led_slice_num, PWM_CHAN_B, period);
             pwm_set_chan_level(motor_slice_num, PWM_CHAN_A, period);
@@ -84,7 +84,10 @@ int main()
             pwm_set_chan_level(led_slice_num, PWM_CHAN_B, 0.0*period);
             pwm_set_chan_level(motor_slice_num, PWM_CHAN_A, 0.0*period);
         }
-        */
+
+        // set sound mode based on toggle switch
+        // ...
+        
         sleep_ms(250); // sleep!
     }
 
