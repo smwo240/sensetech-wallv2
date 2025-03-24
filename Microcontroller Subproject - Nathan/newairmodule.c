@@ -4,14 +4,19 @@
 #include "hardware/adc.h"
 #include "hardware/timer.h"
 
-#define FAN_PWM_PIN 16     // PWM pin for fan
-#define LED_RED_PIN 17     // Red LED pin
-#define LED_YELLOW_PIN 18  // Yellow LED pin
-#define LED_GREEN_PIN 19   // Green LED pin
-#define POT_ADC_PIN 26     // ADC channel 0 (GPIO 26)
-#define AUTO_SHUTOFF_MS 30000 // Auto shutoff after 30s
+#define FAN_PWM_PIN 16         // PWM pin for fan
+#define LED_RED_PIN 17         // Red LED pin
+#define LED_YELLOW_PIN 18      // Yellow LED pin
+#define LED_GREEN_PIN 19       // Green LED pin
+#define POT_ADC_PIN 26         // ADC channel 0 (GPIO 26)
+#define AUTO_SHUTOFF_MS 30000  // Auto shutoff after 30s
+
+#define BUBBLE_BLOWER_PIN 21   // GPIO pin for bubble blower control
+#define BUBBLE_BUTTON_PIN 20   // GPIO pin for button input
 
 volatile uint32_t last_change_time = 0; // Timer for auto shutoff
+volatile bool fan_running = false;
+volatile bool bubble_blower_running = false;
 
 // Function to initialize PWM
 void init_pwm(uint pin, uint slice) {
@@ -40,6 +45,57 @@ uint32_t millis() {
     return to_ms_since_boot(get_absolute_time());
 }
 
+// Function to handle the bubble blower
+void handle_bubble_blower() {
+    // If the button is pressed
+    if (gpio_get(BUBBLE_BUTTON_PIN) == 0) {
+        // If fan is running, turn it off
+        if (fan_running) {
+            pwm_set_chan_level(pwm_gpio_to_slice_num(FAN_PWM_PIN), PWM_CHAN_A, 0);
+            set_led_color(0, 0, 0);  // Turn off LED
+            fan_running = false;
+        }
+
+        // Activate bubble blower
+        gpio_put(BUBBLE_BLOWER_PIN, 1);
+        bubble_blower_running = true;
+        last_change_time = millis();
+
+        printf("Bubble blower activated\n");
+    }
+}
+
+// Function to update fan speed based on potentiometer
+void update_fan_speed(uint fan_slice) {
+    // Read ADC value (12-bit, range: 0-4095)
+    uint16_t adc_value = adc_read();
+    uint16_t pwm_value = (adc_value * 65535) / 4095; // Scale to 16-bit PWM range
+    
+    if (adc_value > 50) { // Ensure fan only turns on when potentiometer is moved
+        // If bubble blower is running, turn it off
+        if (bubble_blower_running) {
+            gpio_put(BUBBLE_BLOWER_PIN, 0);
+            bubble_blower_running = false;
+        }
+
+        // Set fan speed
+        pwm_set_chan_level(fan_slice, PWM_CHAN_A, pwm_value);
+        fan_running = true;
+        last_change_time = millis();
+
+        // Set LED color based on speed
+        if (adc_value < 1341) { // 1% - 33%
+            set_led_color(1, 0, 0); // Red LED
+        } else if (adc_value < 2731) { // 34% - 67%
+            set_led_color(0, 1, 0); // Yellow LED
+        } else { // 68% - 99%
+            set_led_color(0, 0, 1); // Green LED
+        }
+    } else {
+        fan_running = false;
+    }
+}
+
 int main() {
     stdio_init_all();
 
@@ -58,40 +114,40 @@ int main() {
     // Initialize ADC for potentiometer
     init_adc();
 
+    // Initialize bubble blower pin
+    gpio_init(BUBBLE_BLOWER_PIN);
+    gpio_set_dir(BUBBLE_BLOWER_PIN, GPIO_OUT);
+    gpio_put(BUBBLE_BLOWER_PIN, 0); // Ensure blower is off at start
+
+    // Initialize button
+    gpio_init(BUBBLE_BUTTON_PIN);
+    gpio_set_dir(BUBBLE_BUTTON_PIN, GPIO_IN);
+    gpio_pull_up(BUBBLE_BUTTON_PIN); // Pull-up resistor for stable input
+
     uint16_t prev_speed = 0;
-    
+
     while (1) {
-        // Read ADC value (12-bit, range: 0-4095)
-        uint16_t adc_value = adc_read();
-        uint16_t pwm_value = (adc_value * 65535) / 4095; // Scale to 16-bit PWM range
-        
-        // Determine fan speed level based on ADC range
-        if (adc_value < 1341) { // 1% - 33%
-            pwm_set_chan_level(fan_slice, PWM_CHAN_A, pwm_value);
-            set_led_color(1, 0, 0); // Red LED
-        } else if (adc_value < 2731) { // 34% - 67%
-            pwm_set_chan_level(fan_slice, PWM_CHAN_A, pwm_value);
-            set_led_color(0, 1, 0); // Yellow LED
-        } else { // 68% - 99%
-            pwm_set_chan_level(fan_slice, PWM_CHAN_A, pwm_value);
-            set_led_color(0, 0, 1); // Green LED
-        }
+        // Handle bubble blower input
+        handle_bubble_blower();
 
-        // If the input has changed, update the timer
-        if (adc_value != prev_speed) {
-            last_change_time = millis();
-            prev_speed = adc_value;
-        }
+        // Update fan speed
+        update_fan_speed(fan_slice);
 
-        // Check if auto shutoff condition is met
+        // Auto shutoff logic
         if ((millis() - last_change_time) >= AUTO_SHUTOFF_MS) {
-            pwm_set_chan_level(fan_slice, PWM_CHAN_A, 0); // Turn off fan
-            set_led_color(0, 0, 0); // Turn off LED
+            if (fan_running) {
+                pwm_set_chan_level(fan_slice, PWM_CHAN_A, 0); // Turn off fan
+                set_led_color(0, 0, 0); // Turn off LED
+                fan_running = false;
+            }
+            if (bubble_blower_running) {
+                gpio_put(BUBBLE_BLOWER_PIN, 0); // Turn off bubble blower
+                bubble_blower_running = false;
+            }
         }
 
-        sleep_ms(3000); // Delay for 3 seconds before checking again
+        sleep_ms(100); // Small delay to reduce CPU usage
     }
 
     return 0;
 }
-//end

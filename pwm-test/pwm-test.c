@@ -91,6 +91,6 @@ int main() {
 
        sleep_ms(100);
 
-        }; // idle loop
+        }; // idle loop infinite
 
 }
