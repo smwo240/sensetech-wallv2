@@ -252,11 +252,10 @@ int main()
 
         // use toggle switch for speed select
 
-        // if (GPIO# == 1) // speed toggle
+        // if (GPIO# == true) // speed toggle
         //  sleep_ms(200);
         // else
-
-        sleep_ms(400); // speed of the rotation pattern
+            sleep_ms(400); // speed of the rotation pattern
     }
 
 }
