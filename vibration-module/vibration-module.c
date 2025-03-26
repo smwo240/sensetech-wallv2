@@ -13,6 +13,10 @@
 #define OUTPUT_MOTORCTRL_GPIO 16
 #define MODE_SEL_GPIO 19
 
+#define LED1_GPIO 0
+#define LED2_GPIO 1
+#define LED3_GPIO 2
+
 int main()
 {
     stdio_init_all(); // serial comm for debug
@@ -22,6 +26,14 @@ int main()
     gpio_set_dir(MODE_SEL_GPIO, GPIO_IN);
     gpio_pull_up(MODE_SEL_GPIO); // open - 1, closed - 0
     //gpio_set_irq_enabled(BTN6_PIN, GPIO_IRQ_EDGE_FALL, true);
+
+    // LEDs initialization
+    gpio_init(LED1_GPIO);
+    gpio_set_dir(LED1_GPIO, GPIO_OUT);
+    gpio_init(LED2_GPIO);
+    gpio_set_dir(LED2_GPIO, GPIO_OUT);
+    gpio_init(LED3_GPIO);
+    gpio_set_dir(LED3_GPIO, GPIO_OUT);
 
     // Slide potentiometer connected to VCC, GND, and GPIO26
     // ADC on GPIO26 / ADC0
@@ -75,21 +87,41 @@ int main()
         
         // set motor and output led pwm output depending on POT position
         
-        if ((result/4096.0) >= .75) {
+        if ((result/4096.0) >= .70) {
             pwm_set_chan_level(led_slice_num, PWM_CHAN_B, period);
             pwm_set_chan_level(motor_slice_num, PWM_CHAN_A, period);
+            /* set LEDs */{
+                gpio_put(LED1_GPIO,true);
+                gpio_put(LED2_GPIO,true);
+                gpio_put(LED3_GPIO,true);
+            }
         }    
-        else if ((result/4096.0) >= .40) {
+        else if ((result/4096.0) >= .37) {
             pwm_set_chan_level(led_slice_num, PWM_CHAN_B, 0.75*period);
             pwm_set_chan_level(motor_slice_num, PWM_CHAN_A, 0.75*period);
+            /* set LEDs */{
+                gpio_put(LED1_GPIO,false);
+                gpio_put(LED2_GPIO,true);
+                gpio_put(LED3_GPIO,true);
+            }
         }
-        else if ((result/4096.0) >= .20) {
+        else if ((result/4096.0) >= .18) {
             pwm_set_chan_level(led_slice_num, PWM_CHAN_B, 0.5*period);
             pwm_set_chan_level(motor_slice_num, PWM_CHAN_A, 0.5*period);
+            /* set LEDs */{
+                gpio_put(LED1_GPIO,false);
+                gpio_put(LED2_GPIO,false);
+                gpio_put(LED3_GPIO,true);
+            }
         }
         else {
             pwm_set_chan_level(led_slice_num, PWM_CHAN_B, 0.0*period);
             pwm_set_chan_level(motor_slice_num, PWM_CHAN_A, 0.0*period);
+            /* set LEDs */{
+                gpio_put(LED1_GPIO,false);
+                gpio_put(LED2_GPIO,false);
+                gpio_put(LED3_GPIO,false);
+            }
         }
 
         // Set [SOME FEATURE] here using mode select button
