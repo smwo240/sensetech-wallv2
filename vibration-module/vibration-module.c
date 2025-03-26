@@ -11,10 +11,17 @@
 #define INPUT_POT_ADC 26
 #define OUTPUT_LED_GPIO 25
 #define OUTPUT_MOTORCTRL_GPIO 16
+#define MODE_SEL_GPIO 19
 
 int main()
 {
     stdio_init_all(); // serial comm for debug
+
+    // mode select connected to GP19 and GND - closed circuit connects to gnd, open is vcc
+    gpio_init(MODE_SEL_GPIO);
+    gpio_set_dir(MODE_SEL_GPIO, GPIO_IN);
+    gpio_pull_up(MODE_SEL_GPIO); // open - 1, closed - 0
+    //gpio_set_irq_enabled(BTN6_PIN, GPIO_IRQ_EDGE_FALL, true);
 
     // Slide potentiometer connected to VCC, GND, and GPIO26
     // ADC on GPIO26 / ADC0
@@ -85,8 +92,11 @@ int main()
             pwm_set_chan_level(motor_slice_num, PWM_CHAN_A, 0.0*period);
         }
 
-        // set sound mode based on toggle switch
+        // Set [SOME FEATURE] here using mode select button
         // ...
+        if (gpio_get(MODE_SEL_GPIO)) {
+            // pwm_set_chan_level(led_slice_num, PWM_CHAN_B, 1.0*period);
+        }
         
         sleep_ms(250); // sleep!
     }

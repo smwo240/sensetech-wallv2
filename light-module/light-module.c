@@ -33,6 +33,9 @@
 #define BTN7_PIN 19
 #define BTN8_PIN 18
 
+// Mode Select GPIO
+#define MODEBTN_PIN 9
+
 // When a button is pressed, it lights up and stays lit until the position variable reaches the corresponding button and
 // then the direction of the position changes. This should work for multiple buttons but we can set a limit on the number of buttons "active".
 
@@ -203,6 +206,12 @@ int main()
     gpio_pull_up(BTN8_PIN);
     gpio_set_irq_enabled(BTN8_PIN, GPIO_IRQ_EDGE_FALL, true);
 
+    // MODEBTN_PIN
+    gpio_init(MODEBTN_PIN);
+    gpio_set_dir(MODEBTN_PIN,GPIO_IN);
+    gpio_pull_up(MODEBTN_PIN);
+    // no interrupts enabled for MODEBTN_PIN
+
     #pragma endregion 
 
     // loop to model simple behavior.
@@ -242,7 +251,7 @@ int main()
             // button starts ON if collision occurs
             for (int i = 1; i < 7; i++) {
                 gpio_put(position, i % 2 == 0 );
-                sleep_ms(150);
+                sleep_ms(150/(1+gpio_get(MODEBTN_PIN))); // changes with speed toggle
             }
             gpio_put(position,true); // backup turn button back on
         }
@@ -252,9 +261,9 @@ int main()
 
         // use toggle switch for speed select
 
-        // if (GPIO# == true) // speed toggle
-        //  sleep_ms(200);
-        // else
+         if (gpio_get(MODEBTN_PIN)) // speed toggle
+            sleep_ms(200);
+         else
             sleep_ms(400); // speed of the rotation pattern
     }
 
