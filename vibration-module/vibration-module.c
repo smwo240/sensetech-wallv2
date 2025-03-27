@@ -130,9 +130,7 @@ int main()
         // Motor Cycle
         pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO,vals_period[state]);
 
-        //gpio_put(OUTPUT_LED_GPIO, state % 2); // debug - shows program is running
-
-        sleep_ms(400);
+        sleep_ms(400); // consider going to 8 states and reducing this to 300 ms
 
         state = (state + 1) % 6;
         }
