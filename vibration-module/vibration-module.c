@@ -22,12 +22,18 @@
 #define R2 0.37
 #define R3 0.70
 
+// Push Mode Transition Brightness
+#define MAX_BTWN 0.3
+
+// Pulse Mode Number of States
+#define NUM_STATES 12
+
 // normalize values using linear transform
-// all values in this project use 0 as min out and 0.4 as max out
+// all values in this project use 0 as min out and 0.3 as max out
 // fmax() used to make sure the first section of the equation is greater than 0.1 before passing into the rest of the equation - light flickers at low voltage otherwise
 float norm (float x, float min_in, float max_in) {
     // ((x - min_in) / (max_in - min_in)) * (max_out - min_out) + min_out;
-    return (fmax((x - min_in - 0.1), 0.0) / (max_in - min_in)) * (0.4);
+    return (fmax((x - min_in - 0.1), 0.0) / (max_in - min_in)) * (MAX_BTWN);
 }
 
 int main()
@@ -78,10 +84,11 @@ int main()
     pwm_set_enabled(slice1_num, true);
 
     // Constant values used for pulse mode
-    uint16_t vals_period[6] = {0.4*period, 0.6*period, 0.9*period, period, 0.9*period, 0.6*period};
-    float led_levels[3][6] = {{0,          0.10,       1,          0.15,   0,          0},
-                              {0,          0,          0.10,       1,      0.15,       0},
-                              {0,          0,          0,          0.10,   1,          0.15} 
+    uint16_t vals_period[NUM_STATES] = {0.40*period, 0.45*period, 0.55*period, 0.70*period, 0.85*period, 0.95*period, 
+                                             period, 0.95*period, 0.85*period, 0.70*period, 0.55*period, 0.45*period,};
+    float led_levels[3][NUM_STATES] = {{0.05, 0.10, 0.15, 1.00, 1.00, 0.15, 0.10, 0.05, 0.00, 0.00, 0.00, 0.00},
+                                       {0.00, 0.00, 0.05, 0.10, 0.15, 1.00, 1.00, 0.15, 0.10, 0.05, 0.00, 0.00},
+                                       {0.00, 0.00, 0.00, 0.00, 0.05, 0.10, 0.15, 1.00, 1.00, 0.15, 0.10, 0.05} 
     };
     state = 0;
 
@@ -100,7 +107,7 @@ int main()
             }
             else if ((result/4096.0) >= R2) {
                 pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO, 0.75*period); // Motor Duty Cycle
-                // MIN_IN: R2, MAX_IN: R3, MIN_OUT: 0, MAX_OUT: 0.4
+                // MIN_IN: R2, MAX_IN: R3, MIN_OUT: 0, MAX_OUT: MAX_BTWN
                 pwm_set_gpio_level(LED1_GPIO, norm((result/4096.0),R2,R3)*period); // linear transform onto .37 to .70
                 pwm_set_gpio_level(LED2_GPIO, period); // full
                 pwm_set_gpio_level(LED3_GPIO, period); // full
@@ -108,7 +115,7 @@ int main()
             else if ((result/4096.0) >= R1) {
                 pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO, 0.50*period); // Motor Duty Cycle
                 pwm_set_gpio_level(LED1_GPIO, 0.0); // off
-                // MIN_IN: R1, MAX_IN: R2, MIN_OUT: 0, MAX_OUT: 0.4
+                // MIN_IN: R1, MAX_IN: R2, MIN_OUT: 0, MAX_OUT: MAX_BTWN
                 pwm_set_gpio_level(LED2_GPIO, norm((result/4096.0),R1,R2)*period); // linear transform onto .18 to .37
                 pwm_set_gpio_level(LED3_GPIO, period); // full
             }
@@ -116,10 +123,10 @@ int main()
                 pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO, 0.0); // Motor off
                 pwm_set_gpio_level(LED1_GPIO, 0); // off
                 pwm_set_gpio_level(LED2_GPIO, 0.0); // off
-                // MIN_IN: R0, MAX_IN: R1, MIN_OUT: 0, MAX_OUT: 0.4
+                // MIN_IN: R0, MAX_IN: R1, MIN_OUT: 0, MAX_OUT: MAX_BTWN
                 pwm_set_gpio_level(LED3_GPIO, norm((result/4096.0),0,R1)*period);
             }
-            sleep_ms(200); // push mode - 200 ms
+            sleep_ms(100); // push mode - 100 ms cycle
         }
         else {
             // PULSE MODE - VB STRENGTH FOLLOWS PATTERN
@@ -130,9 +137,10 @@ int main()
         // Motor Cycle
         pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO,vals_period[state]);
 
-        sleep_ms(400); // consider going to 8 states and reducing this to 300 ms
+        sleep_ms(200); // Was previously 400 ms for a 6 state cycle - decreased to 200 ms for 12 state cycle
+        // Future change - change for time control and test for proper functionality
 
-        state = (state + 1) % 6;
+        state = (state + 1) % NUM_STATES;
         }
     }
     
