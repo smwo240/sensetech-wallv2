@@ -2,17 +2,18 @@
 #include <stdlib.h>
 #include <math.h>
 #include "pico/stdlib.h"
-#include "hardware/uart.h"
-#include "hardware/i2c.h"
 #include "hardware/pwm.h"
 #include "hardware/adc.h"
 #include "hardware/clocks.h"
+#include "mp3.h"
 
+// Devices GPIO
 #define INPUT_POT_ADC 26
 #define OUTPUT_LED_GPIO 25
 #define OUTPUT_MOTORCTRL_GPIO 16
 #define MODE_SEL_GPIO 19
 
+// GPIO Mapping for Set of LEDs
 #define LED1_GPIO 1
 #define LED2_GPIO 2
 #define LED3_GPIO 3
@@ -22,7 +23,7 @@
 #define R2 0.37
 #define R3 0.70
 
-// Push Mode Transition Brightness
+// Push Mode Transition Brightness Maximum
 #define MAX_BTWN 0.3
 
 // Pulse Mode Number of States
@@ -41,6 +42,13 @@ int main()
     int state, period;
     uint16_t result;
 
+    #pragma region audio
+    stdio_init_all();
+    mp3_initialize();
+    mp3_set_volume(30);
+    mp3_query_status();
+    #pragma endregion
+    
     // mode select connected to GP19 and GND - closed circuit connects to gnd, open is vcc
     gpio_init(MODE_SEL_GPIO);
     gpio_set_dir(MODE_SEL_GPIO, GPIO_IN);
@@ -138,7 +146,7 @@ int main()
         pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO,vals_period[state]);
 
         sleep_ms(200); // Was previously 400 ms for a 6 state cycle - decreased to 200 ms for 12 state cycle
-        // Future change - change for time control and test for proper functionality
+        // Future change - change for time control and test for full functionality
 
         state = (state + 1) % NUM_STATES;
         }
