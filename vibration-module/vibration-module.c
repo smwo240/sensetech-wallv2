@@ -45,7 +45,7 @@ int main()
     #pragma region audio
     stdio_init_all();
     mp3_initialize();
-    mp3_set_volume(30);
+    mp3_set_volume(15);
     mp3_query_status();
     #pragma endregion
     
@@ -147,6 +147,9 @@ int main()
 
         sleep_ms(200); // Was previously 400 ms for a 6 state cycle - decreased to 200 ms for 12 state cycle
         // Future change - change for time control and test for full functionality
+
+        if (state == 6) // play 
+            mp3_play_sound(BUBBLEPOP);
 
         state = (state + 1) % NUM_STATES;
         }

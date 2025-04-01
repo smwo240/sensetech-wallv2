@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(vibration-module vibration-module.c )
+add_executable(vibration-module vibration-module.c mp3.c)
 
 pico_set_program_name(vibration-module "vibration-module")
 pico_set_program_version(vibration-module "0.1")
