@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(pwm-test pwm-test.c )
+add_executable(pwm-test pwm-test.c mp3.c)
 
 pico_set_program_name(pwm-test "pwm-test")
 pico_set_program_version(pwm-test "0.1")
