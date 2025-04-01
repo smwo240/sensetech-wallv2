@@ -1,159 +1,248 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 #include "pico/stdlib.h"
-#include "hardware/pwm.h"
-#include "hardware/adc.h"
+#include "hardware/timer.h"
 #include "hardware/clocks.h"
-// #include "mp3.h"
+#include "hardware/gpio.h"
+#include "hardware/adc.h"
+#include "hardware/pwm.h"
+#include "hardware/uart.h"
+// LED GPIO
+#define BTN1_LED_PIN 0
+#define BTN2_LED_PIN 1
+#define BTN3_LED_PIN 2
+#define BTN4_LED_PIN 3
+#define BTN5_LED_PIN 4
+#define BTN6_LED_PIN 5
+#define BTN7_LED_PIN 6
+#define BTN8_LED_PIN 7
 
-// Devices GPIO
-#define INPUT_POT_ADC 26
-#define INPUT_VOL_ADC 27
-#define OUTPUT_LED_GPIO 25
-#define OUTPUT_MOTORCTRL_GPIO 16
-#define MODE_SEL_GPIO 19
+// BUTTON GPIO
+#define BTN1_PIN 28
+#define BTN2_PIN 27
+#define BTN3_PIN 26
+#define BTN4_PIN 17 // was 22 - bad connection
+#define BTN5_PIN 21
+#define BTN6_PIN 20
+#define BTN7_PIN 19
+#define BTN8_PIN 18
 
-// GPIO Mapping for Set of LEDs
-#define LED1_GPIO 1
-#define LED2_GPIO 2
-#define LED3_GPIO 3
+// ADC
+#define ADC_CLK_DIV 1000 // temp value
 
-// POT Range Values
-#define R1 0.18
-#define R2 0.37
-#define R3 0.70
+// When a button is pressed, it lights up and stays lit until the position variable reaches the corresponding button and
+// then the direction of the position changes. This should work for multiple buttons but we can set a limit on the number of buttons "active".
 
-// Push Mode Transition Brightness Maximum
-#define MAX_BTWN 0.3
+// global variables
+// Button states for light module logic - activated from interrupt handler
+// This is idependent of the light being lit up, this is the state that matches when a button has been pressed
+// and the looping behavior is waiting for the position to match a btnN_on
 
-// Pulse Mode Number of States
-#define NUM_STATES 12
+// one off of btn# because of initial oversights  btn# = index + 1
+bool btn_active[8] = {false, false, false, false, false, false, false, false};
 
-// normalize values using linear transform
-// all values in this project use 0 as min out and 0.3 as max out
-// fmax() used to make sure the first section of the equation is greater than 0.1 before passing into the rest of the equation - light flickers at low voltage otherwise
-float norm (float x, float min_in, float max_in) {
-    // ((x - min_in) / (max_in - min_in)) * (max_out - min_out) + min_out;
-    return (fmax((x - min_in - 0.1), 0.0) / (max_in - min_in)) * (MAX_BTWN);
+int64_t alarm_callback(alarm_id_t id, void *user_data) {
+    // Put your timeout handler code in here
+    return 0;
 }
+
+void gpio_callback(uint gpio, uint32_t events) {
+    // Interrupt routines for when a button is pressed on the face plate.
+    if (gpio == BTN1_PIN) {
+    if (!btn_active[0]) {
+        btn_active[0] = true;
+        
+        // play activation sound (?)
+    }
+    gpio_put(BTN1_LED_PIN, true);
+} 
+else if (gpio == BTN2_PIN) {
+    if (!btn_active[1]) {
+        btn_active[1] = true;
+        // play activation sound
+    }
+    gpio_put(BTN2_LED_PIN, true);
+}
+else if (gpio == BTN3_PIN) {
+    if (!btn_active[2]) {
+        btn_active[2] = true;
+        // play activation sound
+    }
+    gpio_put(BTN3_LED_PIN, true);
+}
+else if (gpio == BTN4_PIN) {
+    if (!btn_active[3]) {
+        btn_active[3] = true;
+        // play activation sound
+    }
+    gpio_put(BTN4_LED_PIN, true);
+}
+else if (gpio == BTN5_PIN) {
+    if (!btn_active[4]) {
+        btn_active[4] = true;
+        // play activation sound
+    }
+    gpio_put(BTN5_LED_PIN, true);
+}
+else if (gpio == BTN6_PIN) {
+    if (!btn_active[5]) {
+        btn_active[5] = true;
+        // play activation sound
+    }
+    gpio_put(BTN6_LED_PIN, true);
+}
+else if (gpio == BTN7_PIN) {
+    if (!btn_active[6]) {
+        btn_active[6] = true;
+        // play activation sound
+    }
+    gpio_put(BTN7_LED_PIN, true);
+}
+else if (gpio == BTN8_PIN) {
+    if (!btn_active[7]) {
+        btn_active[7] = true;
+        // play activation sound
+    }
+    gpio_put(BTN8_LED_PIN, true);
+}
+    else {
+        // error, shouldn't be possible with hardware
+        // debug - light up all lights for 2 s
+
+    }
+}
+
 
 int main()
 {
-    int state, period;
-    uint16_t result;
-
-    /*
     stdio_init_all();
-    mp3_initialize();
-    mp3_set_volume(30);
-    mp3_query_status();
-    */
+
+    // Timer example code - This example fires off the callback after 2000ms
+    add_alarm_in_ms(2000, alarm_callback, NULL, false);
+
+    // Initialize GPIO - all buttons set up for negative logic on push (pull-up resistors and interrupts on falling edge)
+
+    // BTN1_LED_PIN
+    gpio_init(BTN1_LED_PIN);
+    gpio_set_dir(BTN1_LED_PIN, GPIO_OUT);
     
-    // mode select connected to GP19 and GND - closed circuit connects to gnd, open is vcc
-    gpio_init(MODE_SEL_GPIO);
-    gpio_set_dir(MODE_SEL_GPIO, GPIO_IN);
-    gpio_pull_up(MODE_SEL_GPIO); // open - 1, closed - 0
+    // BTN1_PIN
+    gpio_init(BTN1_PIN);
+    gpio_set_dir(BTN1_PIN,GPIO_IN);
+    gpio_pull_up(BTN1_PIN);
+    gpio_set_irq_enabled_with_callback(BTN1_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_callback); // enable interrupts
 
-    // PWM GPIO
-    gpio_set_function(LED1_GPIO, GPIO_FUNC_PWM);
-    gpio_set_function(LED2_GPIO, GPIO_FUNC_PWM);
-    gpio_set_function(LED3_GPIO, GPIO_FUNC_PWM);
-    // Output to motor circuit connected to GPIO16, VCC, GND
-    // PWM enabled to control speed of motor - goes into high speed transistor so control VCC input to motor
-    gpio_set_function(OUTPUT_MOTORCTRL_GPIO, GPIO_FUNC_PWM);
+    // BTN2_LED_PIN
+    gpio_init(BTN2_LED_PIN);
+    gpio_set_dir(BTN2_LED_PIN, GPIO_OUT);
+    //BTN2_PIN
+    gpio_init(BTN2_PIN);
+    gpio_set_dir(BTN2_PIN, GPIO_IN);
+    gpio_pull_up(BTN2_PIN);
+    gpio_set_irq_enabled(BTN2_PIN, GPIO_IRQ_EDGE_FALL, true);
 
-    /* LED1: GPIO1, PWM Channel 0B
-       LED2: GPIO2, PWM Channel 1A
-       LED3: GPIO3, PWM Channel 1B
-       MOTOR: GPIO16, PWM Channel 0A
-    */
-    uint slice0_num = pwm_gpio_to_slice_num(0); // slice 0: motor and led1
-    uint slice1_num = pwm_gpio_to_slice_num(2); // slice 1: led2 and led3
+    // BTN3_LED_PIN
+    gpio_init(BTN3_LED_PIN);
+    gpio_set_dir(BTN3_LED_PIN, GPIO_OUT);
+    // BTN3_PIN
+    gpio_init(BTN3_PIN);
+    gpio_set_dir(BTN3_PIN, GPIO_IN);
+    gpio_pull_up(BTN3_PIN);
+    gpio_set_irq_enabled(BTN3_PIN, GPIO_IRQ_EDGE_FALL, true);
 
-    // Slide potentiometer connected to VCC, GND, and GPIO26
-    // ADC BUTTON on GPIO26 / ADC0
-    // ADC VOLUME CONTROL on GPIO27 / ADC1
+    // BTN4_LED_PIN
+    gpio_init(BTN4_LED_PIN);
+    gpio_set_dir(BTN4_LED_PIN, GPIO_OUT);
+    // BTN4_PIN
+    gpio_init(BTN4_PIN);
+    gpio_set_dir(BTN4_PIN, GPIO_IN);
+    gpio_pull_up(BTN4_PIN);
+    gpio_set_irq_enabled(BTN4_PIN, GPIO_IRQ_EDGE_FALL, true);
+
+    // BTN5_LED_PIN
+    gpio_init(BTN5_LED_PIN);
+    gpio_set_dir(BTN5_LED_PIN, GPIO_OUT);
+    // BTN5_PIN
+    gpio_init(BTN5_PIN);
+    gpio_set_dir(BTN5_PIN, GPIO_IN);
+    gpio_pull_up(BTN5_PIN);
+    gpio_set_irq_enabled(BTN5_PIN, GPIO_IRQ_EDGE_FALL, true);
+
+    // BTN6_LED_PIN
+    gpio_init(BTN6_LED_PIN);
+    gpio_set_dir(BTN6_LED_PIN, GPIO_OUT);
+    // BTN6_PIN
+    gpio_init(BTN6_PIN);
+    gpio_set_dir(BTN6_PIN, GPIO_IN);
+    gpio_pull_up(BTN6_PIN);
+    gpio_set_irq_enabled(BTN6_PIN, GPIO_IRQ_EDGE_FALL, true);
+
+    // BTN7_LED_PIN
+    gpio_init(BTN7_LED_PIN);
+    gpio_set_dir(BTN7_LED_PIN, GPIO_OUT);
+    // BTN7_PIN
+    gpio_init(BTN7_PIN);
+    gpio_set_dir(BTN7_PIN, GPIO_IN);
+    gpio_pull_up(BTN7_PIN);
+    gpio_set_irq_enabled(BTN7_PIN, GPIO_IRQ_EDGE_FALL, true);
+
+    // BTN8_LED_PIN
+    gpio_init(BTN8_LED_PIN);
+    gpio_set_dir(BTN8_LED_PIN, GPIO_OUT);
+    // BTN8_PIN
+    gpio_init(BTN8_PIN);
+    gpio_set_dir(BTN8_PIN, GPIO_IN);
+    gpio_pull_up(BTN8_PIN);
+    gpio_set_irq_enabled(BTN8_PIN, GPIO_IRQ_EDGE_FALL, true);
+
+    // ADC Example
     adc_init();
-    adc_gpio_init(INPUT_POT_ADC);
-    adc_gpio_init(INPUT_VOL_ADC);
+    adc_gpio_init(31);
     adc_select_input(0);
+    //adc_fifo_setup(bool en, bool dreq_en, uint16_t dreq_thresh,
+    //               bool err_in_fifo, bool byte_shift)
+    adc_fifo_setup(true,false,1,false,true);
+    adc_set_clkdiv(ADC_CLK_DIV);
 
-    // set clock divider to 4, then frequency is 125/4 = 31.25 MHz
-    // Minimize this to reduce power consumption.
-    pwm_set_clkdiv(slice0_num, 4);
-    pwm_set_clkdiv(slice1_num, 4);
+    // loop to model simple behavior.
+    uint32_t position = 1; // position of "light" moving from button to button in circular pattern
+    bool clockwise = true;  // true = clockwise
+                            // false = counterclockwise
 
-    // Set period number of cycles for ... Hz output
-    // period = Clk/cycle\\.
-    period = 1250;
-    pwm_set_wrap(slice0_num, period);
-    pwm_set_wrap(slice1_num, period);
+    while (true) {
+        if (!btn_active[position]) {
+            // turn off previous position 
+            gpio_put(position, false);
 
-    // Enable PWM running
-    pwm_set_enabled(slice0_num, true);
-    pwm_set_enabled(slice1_num, true);
+            // do direction swap function - future implmentation
+        }
+        
+        if (clockwise) { 
+            position = (position + 1) % 8; }   // iterate clockwise (8 % 8 = 0)
+        else { 
+            position = (position - 1 + 8) % 8; } // iterate counterclockwise (substitute for -1 % 8 = 7)
 
-    // Constant values used for pulse mode
-    uint16_t vals_period[NUM_STATES] = {0.40*period, 0.45*period, 0.55*period, 0.70*period, 0.85*period, 0.95*period, 
-                                             period, 0.95*period, 0.85*period, 0.70*period, 0.55*period, 0.45*period,};
-    float led_levels[3][NUM_STATES] = {{0.05, 0.10, 0.15, 1.00, 1.00, 0.15, 0.10, 0.05, 0.00, 0.00, 0.00, 0.00},
-                                       {0.00, 0.00, 0.05, 0.10, 0.15, 1.00, 1.00, 0.15, 0.10, 0.05, 0.00, 0.00},
-                                       {0.00, 0.00, 0.00, 0.00, 0.05, 0.10, 0.15, 1.00, 1.00, 0.15, 0.10, 0.05} 
-    };
-    state = 0;
+        // light up new position
+        gpio_put(position, true);
 
-    while (1) 
-    {
-        // Use state of mode select to determine behavior
-        if (gpio_get(MODE_SEL_GPIO)) {
-            // PUSH MODE - VB STRENGTH DETERMINED BY POT POSITION
-            result = adc_read(); // 12-bit value from 0-3.3V -> 0-4096 int
+        /*========= Check if button is active at new position ========= */
+        if (btn_active[position]) {
+            // play a sound (once configured)
 
-            if ((result/4096.0) >= R3) {
-                pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO, period); // Motor Duty Cycle
-                pwm_set_gpio_level(LED1_GPIO, period); // full
-                pwm_set_gpio_level(LED2_GPIO, period); // full
-                pwm_set_gpio_level(LED3_GPIO, period); // full
+            clockwise = !clockwise; // toggle direction
+            btn_active[position] = false;
+
+            // button starts ON if collision occurs
+            for (int i = 1; i < 7; i++) {
+                gpio_put(position, i % 2 == 0 );
+                sleep_ms(150);
             }
-            else if ((result/4096.0) >= R2) {
-                pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO, 0.75*period); // Motor Duty Cycle
-                // MIN_IN: R2, MAX_IN: R3, MIN_OUT: 0, MAX_OUT: MAX_BTWN
-                pwm_set_gpio_level(LED1_GPIO, norm((result/4096.0),R2,R3)*period); // linear transform onto .37 to .70
-                pwm_set_gpio_level(LED2_GPIO, period); // full
-                pwm_set_gpio_level(LED3_GPIO, period); // full
-            }
-            else if ((result/4096.0) >= R1) {
-                pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO, 0.50*period); // Motor Duty Cycle
-                pwm_set_gpio_level(LED1_GPIO, 0.0); // off
-                // MIN_IN: R1, MAX_IN: R2, MIN_OUT: 0, MAX_OUT: MAX_BTWN
-                pwm_set_gpio_level(LED2_GPIO, norm((result/4096.0),R1,R2)*period); // linear transform onto .18 to .37
-                pwm_set_gpio_level(LED3_GPIO, period); // full
-            }
-            else {
-                pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO, 0.0); // Motor off
-                pwm_set_gpio_level(LED1_GPIO, 0); // off
-                pwm_set_gpio_level(LED2_GPIO, 0.0); // off
-                // MIN_IN: R0, MAX_IN: R1, MIN_OUT: 0, MAX_OUT: MAX_BTWN
-                pwm_set_gpio_level(LED3_GPIO, norm((result/4096.0),0,R1)*period);
-            }
-            sleep_ms(100); // push mode - 100 ms cycle
+            gpio_put(position,true); // backup turn button back on
         }
         else {
-            // PULSE MODE - VB STRENGTH FOLLOWS PATTERN
-            // LED cycle
-        pwm_set_gpio_level(LED1_GPIO,led_levels[0][state]*period);
-        pwm_set_gpio_level(LED2_GPIO,led_levels[1][state]*period);
-        pwm_set_gpio_level(LED3_GPIO,led_levels[2][state]*period);
-        // Motor Cycle
-        pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO,vals_period[state]);
-
-        sleep_ms(200); // Was previously 400 ms for a 6 state cycle - decreased to 200 ms for 12 state cycle
-        // Future change - change for time control and test for full functionality
-
-        state = (state + 1) % NUM_STATES;
+            // do nothing, continue to next loop
         }
+
+        sleep_ms(400); // speed of the rotation pattern
+
     }
-    
-    return 0;
 }
