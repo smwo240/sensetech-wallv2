@@ -24,14 +24,14 @@
 #define BTN8_LED_PIN 7
 
 // BUTTON GPIO
-#define BTN1_PIN 28
-#define BTN2_PIN 27
-#define BTN3_PIN 26
-#define BTN4_PIN 22
-#define BTN5_PIN 21
-#define BTN6_PIN 20
-#define BTN7_PIN 19
-#define BTN8_PIN 18
+#define BTN1_PIN 34
+#define BTN2_PIN 32
+#define BTN3_PIN 31
+#define BTN4_PIN 29
+#define BTN5_PIN 27
+#define BTN6_PIN 26
+#define BTN7_PIN 25
+#define BTN8_PIN 24
 
 // Mode Select GPIO
 #define MODEBTN_PIN 9
