@@ -36,7 +36,7 @@ bool clockwise;  // direction pattern should be moving
 // TODO - add collision check in here to avoid timing issues in main loop
 //      - adding this will also require modification to main loop im sure there will be bugs with that that can be addressed once observed.
 void gpio_callback(uint gpio, uint32_t events) {
-    printf("callback triggered")
+    printf("callback triggered");
     for (int i = 0; i < BUTTON_COUNT; i++) {
         if (gpio == BTN_PINS[i] && !btn_react[i]) {
             if (state == i) {
