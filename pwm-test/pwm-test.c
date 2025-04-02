@@ -3,6 +3,7 @@
 #include "pico/stdlib.h"
 #include "hardware/timer.h"
 #include "hardware/gpio.h"
+#include "hardware/uart.h"
 #include "mp3.h"
 
 // enum to use BTN numbers as indices
@@ -35,6 +36,7 @@ bool clockwise;  // direction pattern should be moving
 // TODO - add collision check in here to avoid timing issues in main loop
 //      - adding this will also require modification to main loop im sure there will be bugs with that that can be addressed once observed.
 void gpio_callback(uint gpio, uint32_t events) {
+    printf("callback triggered")
     for (int i = 0; i < BUTTON_COUNT; i++) {
         if (gpio == BTN_PINS[i] && !btn_react[i]) {
             if (state == i) {
@@ -52,7 +54,7 @@ void gpio_callback(uint gpio, uint32_t events) {
 }
 
 // Initialize GPIO and interrupts
-void gpio_init() {
+void gpio_setup() {
     for (int i = 0; i < BUTTON_COUNT; i++)
     {
         // Initialize Button
@@ -99,7 +101,7 @@ int main() {
     clockwise = true;
 
     stdio_init_all();
-    gpio_init();
+    gpio_setup();
 
     while (1) {
         if (!btn_active[state])                                         // previous position
@@ -113,9 +115,10 @@ int main() {
         gpio_put(LED_PINS[state], true);                                // light up new position
             
         if (btn_active[state])                                          // new position 
-            collision(state);                                           // check for collision with active buttons
+            collision_handling(state);                                  // check for collision with active buttons
 
         sleep_ms(400);
+        printf("loop \r\n");
 
         gpio_put(BOARD_LED, state % 2 == 0);
     }
