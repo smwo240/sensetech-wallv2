@@ -24,6 +24,9 @@
 #define BTN7_PIN 19
 #define BTN8_PIN 18
 
+// MODE SELECT GPIO
+#define MODE_SEL 9
+
 // When a button is pressed, it lights up and stays lit until the position variable reaches the corresponding button and
 // then the direction of the position changes. This should work for multiple buttons but we can set a limit on the number of buttons "active".
 
@@ -41,7 +44,8 @@ void gpio_callback(uint gpio, uint32_t events) {
     if (gpio == BTN1_PIN) {
     if (!btn_active[0]) {
         btn_active[0] = true;
-        // play activation sound (?)
+        // play activation sound
+        mp3_play_sound(C5);
     }
     gpio_put(BTN1_LED_PIN, true);
 } 
@@ -49,6 +53,7 @@ else if (gpio == BTN2_PIN) {
     if (!btn_active[1]) {
         btn_active[1] = true;
         // play activation sound
+        mp3_play_sound(D5);
     }
     gpio_put(BTN2_LED_PIN, true);
 }
@@ -56,6 +61,7 @@ else if (gpio == BTN3_PIN) {
     if (!btn_active[2]) {
         btn_active[2] = true;
         // play activation sound
+        mp3_play_sound(E5);
     }
     gpio_put(BTN3_LED_PIN, true);
 }
@@ -63,6 +69,7 @@ else if (gpio == BTN4_PIN) {
     if (!btn_active[3]) {
         btn_active[3] = true;
         // play activation sound
+        mp3_play_sound(F5);
     }
     gpio_put(BTN4_LED_PIN, true);
 }
@@ -70,6 +77,7 @@ else if (gpio == BTN5_PIN) {
     if (!btn_active[4]) {
         btn_active[4] = true;
         // play activation sound
+        mp3_play_sound(G5);
     }
     gpio_put(BTN5_LED_PIN, true);
 }
@@ -77,6 +85,7 @@ else if (gpio == BTN6_PIN) {
     if (!btn_active[5]) {
         btn_active[5] = true;
         // play activation sound
+        mp3_play_sound(A5);
     }
     gpio_put(BTN6_LED_PIN, true);
 }
@@ -84,6 +93,7 @@ else if (gpio == BTN7_PIN) {
     if (!btn_active[6]) {
         btn_active[6] = true;
         // play activation sound
+        mp3_play_sound(B5);
     }
     gpio_put(BTN7_LED_PIN, true);
 }
@@ -91,6 +101,7 @@ else if (gpio == BTN8_PIN) {
     if (!btn_active[7]) {
         btn_active[7] = true;
         // play activation sound
+        mp3_play_sound(C6);
     }
     gpio_put(BTN8_LED_PIN, true);
 }
@@ -226,7 +237,7 @@ int main()
             // do nothing, continue to next loop
         }
         
-        mp3_play_sound(C5);
+        //mp3_play_sound(C5);
 
         // gpio_put(BTN1_LED_PIN, true);
         // gpio_put(BTN2_LED_PIN, true);
@@ -237,7 +248,10 @@ int main()
         // gpio_put(BTN7_LED_PIN, true);
         // gpio_put(BTN8_LED_PIN, true);
 
-        sleep_ms(400); // speed of the rotation pattern
+        if (gpio_get(MODE_SEL))
+            sleep_ms(400); // speed of the rotation pattern
+        else   
+            sleep_ms(300);
 
     }
 }
