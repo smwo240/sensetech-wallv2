@@ -177,15 +177,21 @@ int main()
             else
                 sleep_ms(300);
 
-            if (state == 4)
+            // audio dependent on loop state
+            // notes go from C5-F5 then back down F5-C5
+            if (state == 3)
                 mp3_play_sound(C5);
-            else if (state == 5) // play sound once per full 12-state cycle
+            else if (state == 4) 
                 mp3_play_sound(D5);
-            else if (state == 6)
+            else if (state == 5)
                 mp3_play_sound(E5);
+            else if (state == 6)
+                mp3_play_sound(F5);
             else if (state == 7)
-                mp3_play_sound(D5);
+                mp3_play_sound(E5);
             else if (state == 8)
+                mp3_play_sound(D5);
+            else if (state == 9)
                 mp3_play_sound(C5);
 
             state = (state + 1) % NUM_STATES; // increment state
