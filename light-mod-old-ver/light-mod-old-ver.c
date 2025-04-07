@@ -249,26 +249,15 @@ int main()
 
             mp3_play_sound(CRASH); // collision sound
             // button starts ON if collision occurs
-            for (int i = 1; i < 7; i++) {
+            for (int i = 1; i < 5; i++) {
                 gpio_put(position, i % 2 == 0 );
-                sleep_ms(150);
+                MODE_SEL ? sleep_ms(200) : sleep_ms(125); // on slow mode 200ms, fast mode 125ms
             }
             gpio_put(position,true); // backup turn button back on
         }
         else {
             // do nothing, continue to next loop
         }
-        
-        //mp3_play_sound(C5);
-
-        // gpio_put(BTN1_LED_PIN, true);
-        // gpio_put(BTN2_LED_PIN, true);
-        // gpio_put(BTN3_LED_PIN, true);
-        // gpio_put(BTN4_LED_PIN, true);
-        // gpio_put(BTN5_LED_PIN, true);
-        // gpio_put(BTN6_LED_PIN, true);
-        // gpio_put(BTN7_LED_PIN, true);
-        // gpio_put(BTN8_LED_PIN, true);
 
         if (gpio_get(MODE_SEL))
             sleep_ms(400); // speed of the rotation pattern
