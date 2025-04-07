@@ -45,7 +45,7 @@ void gpio_callback(uint gpio, uint32_t events) {
     if (!btn_active[0]) {
         btn_active[0] = true;
         // play activation sound
-        mp3_play_sound(C5);
+        button_press_sound();
     }
     gpio_put(BTN1_LED_PIN, true);
 } 
@@ -53,7 +53,7 @@ else if (gpio == BTN2_PIN) {
     if (!btn_active[1]) {
         btn_active[1] = true;
         // play activation sound
-        mp3_play_sound(D5);
+        button_press_sound();
     }
     gpio_put(BTN2_LED_PIN, true);
 }
@@ -61,7 +61,7 @@ else if (gpio == BTN3_PIN) {
     if (!btn_active[2]) {
         btn_active[2] = true;
         // play activation sound
-        mp3_play_sound(E5);
+        button_press_sound();
     }
     gpio_put(BTN3_LED_PIN, true);
 }
@@ -69,7 +69,7 @@ else if (gpio == BTN4_PIN) {
     if (!btn_active[3]) {
         btn_active[3] = true;
         // play activation sound
-        mp3_play_sound(F5);
+        button_press_sound();
     }
     gpio_put(BTN4_LED_PIN, true);
 }
@@ -77,7 +77,7 @@ else if (gpio == BTN5_PIN) {
     if (!btn_active[4]) {
         btn_active[4] = true;
         // play activation sound
-        mp3_play_sound(G5);
+        button_press_sound();
     }
     gpio_put(BTN5_LED_PIN, true);
 }
@@ -85,7 +85,7 @@ else if (gpio == BTN6_PIN) {
     if (!btn_active[5]) {
         btn_active[5] = true;
         // play activation sound
-        mp3_play_sound(A5);
+        button_press_sound();
     }
     gpio_put(BTN6_LED_PIN, true);
 }
@@ -93,7 +93,7 @@ else if (gpio == BTN7_PIN) {
     if (!btn_active[6]) {
         btn_active[6] = true;
         // play activation sound
-        mp3_play_sound(B5);
+        button_press_sound();
     }
     gpio_put(BTN7_LED_PIN, true);
 }
@@ -101,7 +101,7 @@ else if (gpio == BTN8_PIN) {
     if (!btn_active[7]) {
         btn_active[7] = true;
         // play activation sound
-        mp3_play_sound(C6);
+        button_press_sound();
     }
     gpio_put(BTN8_LED_PIN, true);
 }
@@ -112,6 +112,27 @@ else if (gpio == BTN8_PIN) {
     }
 }
 
+// increment notes as number of active buttons present
+void button_press_sound() {
+    // count active buttons
+    uint count = 0;
+    for (int i = 0; i < 8; i++) {
+        if (btn_active[i] == true)
+            count++;
+    }
+    // count should be at least 1
+    switch (count) {
+        case 1: mp3_play_sound(C5);
+        case 2: mp3_play_sound(D5);
+        case 3: mp3_play_sound(E5);
+        case 4: mp3_play_sound(F5);
+        case 5: mp3_play_sound(G5);
+        case 6: mp3_play_sound(A5);
+        case 7: mp3_play_sound(B5);
+        default: // do nothing
+    }
+    return;
+}
 
 int main()
 {
@@ -226,6 +247,7 @@ int main()
             clockwise = !clockwise; // toggle direction
             btn_active[position] = false;
 
+            mp3_play_sound(CRASH); // collision sound
             // button starts ON if collision occurs
             for (int i = 1; i < 7; i++) {
                 gpio_put(position, i % 2 == 0 );

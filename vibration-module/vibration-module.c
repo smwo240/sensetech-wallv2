@@ -177,8 +177,16 @@ int main()
             else
                 sleep_ms(300);
 
-            if (state == 5) // play sound once per full 12-state cycle
-                mp3_play_sound(BUBBLEPOP);
+            if (state == 4)
+                mp3_play_sound(C5);
+            else if (state == 5) // play sound once per full 12-state cycle
+                mp3_play_sound(D5);
+            else if (state == 6)
+                mp3_play_sound(E5);
+            else if (state == 7)
+                mp3_play_sound(D5);
+            else if (state == 8)
+                mp3_play_sound(C5);
 
             state = (state + 1) % NUM_STATES; // increment state
 
