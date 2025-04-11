@@ -105,6 +105,7 @@ int main()
     while (1) 
     {
         result = adc_read(); // 12-bit value from 0-3.3V -> 0-4096 int
+        printf("%d", result); // debug adc result
 
         // Use state of mode select to determine behavior
         if (gpio_get(MODE_SEL_GPIO)) {

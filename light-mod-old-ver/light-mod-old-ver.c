@@ -40,7 +40,7 @@ bool btn_active[8] = {false, false, false, false, false, false, false, false};
 
 void gpio_callback(uint gpio, uint32_t events) {
     // Interrupt routines for when a button is pressed on the face plate.
-    printf("test \r\n");
+    // printf("test \r\n");
     if (gpio == BTN1_PIN) {
     if (!btn_active[0]) {
         btn_active[0] = true;
