@@ -112,7 +112,14 @@ void gpio_callback(uint gpio, uint32_t events) {
         btn_active[5] = true;
         btn_time[5] = time_us_64();  // record timestamp
     } else if (gpio == BTN7_PIN && btn_active[6] == false) {
-        // mode select
+        mode = (mode + 1) % 3; // mode select
+
+        switch (mode) {
+            case 0: mp3_play_sound(A5); break;
+            case 1: mp3_play_sound(SNARE); break;
+            case 2: mp3_play_sound(CAT_MEOW); break;
+            default: mp3_play_sound(A5); break;
+        }
 
         gpio_put(BTN7_LED_PIN, true);
         btn_active[6] = true;
@@ -167,8 +174,6 @@ int main()
     // mp3_set_volume(15);
     mp3_query_status();
 
-    mp3_play_sound(TOM);
-
     while (true) {
         if (btn_active[0] == true && (time_us_64() - btn_time[0] >= DELAY_US)) {
             gpio_put(BTN1_LED_PIN, false);
@@ -195,8 +200,6 @@ int main()
             btn_active[5] = false;
         }
         if (btn_active[6] == true && (time_us_64() - btn_time[6] >= DELAY_US)) {
-            mode = (mode + 1) % 3;
-
             gpio_put(BTN7_LED_PIN, false);
             btn_active[6] = false;
         }
