@@ -46,7 +46,7 @@ int main()
     #pragma region audio
     stdio_init_all();
     mp3_initialize();
-    mp3_set_volume(30);
+    mp3_set_volume(16);
     mp3_query_status();
     #pragma endregion
     
@@ -93,8 +93,12 @@ int main()
     pwm_set_enabled(slice1_num, true);
 
     // Constant values used for pulse mode
-    uint16_t vals_period[NUM_STATES] = {0.40*period, 0.45*period, 0.55*period, 0.70*period, 0.85*period, 0.95*period, 
-                                             period, 0.95*period, 0.85*period, 0.70*period, 0.55*period, 0.45*period,};
+    uint16_t vals_period[NUM_STATES] = {
+        0.4000*period, 0.4292*period, 0.4875*period,
+        0.5750*period, 0.6625*period, 0.7208*period,
+        0.7500*period, 0.7208*period, 0.6625*period,
+        0.5750*period, 0.4875*period, 0.4292*period
+    };
     float led_levels[3][NUM_STATES] = {{0.05, 0.10, 0.15, 1.00, 1.00, 0.15, 0.10, 0.05, 0.00, 0.00, 0.00, 0.00},
                                        {0.00, 0.00, 0.05, 0.10, 0.15, 1.00, 1.00, 0.15, 0.10, 0.05, 0.00, 0.00},
                                        {0.00, 0.00, 0.00, 0.00, 0.05, 0.10, 0.15, 1.00, 1.00, 0.15, 0.10, 0.05} 
@@ -170,30 +174,28 @@ int main()
         
             // Sleep time dependent on button position
             if ((result/4096.0) >= R3)
-                sleep_ms(100);
-            else if ((result/4096.0) >= R2)
                 sleep_ms(150);
-            else if ((result/4096.0) >= R1)
+            else if ((result/4096.0) >= R2)
                 sleep_ms(200);
+            else if ((result/4096.0) >= R1)
+                sleep_ms(250);
             else
                 sleep_ms(300);
 
             // audio dependent on loop state
             // notes go from C5-F5 then back down F5-C5
-            if (state == 3)
+            if (state == 0)
                 mp3_play_sound(C5);
-            else if (state == 4) 
+            else if (state == 2) 
                 mp3_play_sound(D5);
+            else if (state == 4)
+                mp3_play_sound(E5);
             else if (state == 5)
-                mp3_play_sound(E5);
-            else if (state == 6)
                 mp3_play_sound(F5);
-            else if (state == 7)
-                mp3_play_sound(E5);
             else if (state == 8)
+                mp3_play_sound(E5);
+            else if (state == 10)
                 mp3_play_sound(D5);
-            else if (state == 9)
-                mp3_play_sound(C5);
 
             state = (state + 1) % NUM_STATES; // increment state
 
