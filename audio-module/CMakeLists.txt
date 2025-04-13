@@ -42,11 +42,12 @@ pico_set_program_version(audio-module "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(audio-module 0)
-pico_enable_stdio_usb(audio-module 0)
+pico_enable_stdio_usb(audio-module 1)
 
 # Add the standard library to the build
 target_link_libraries(audio-module
-        pico_stdlib)
+    hardware_adc        
+    pico_stdlib)
 
 # Add the standard include files to the build
 target_include_directories(audio-module PRIVATE
