@@ -18,19 +18,24 @@ bool is_pressed(uint gpio) {
 }
 
 void run_device(uint output_gpio, uint led_gpio) {
+    // BUBBLE
     if (output_gpio == BUBBLE_OUTPUT)
         gpio_put(output_gpio, 0);  // Turn device ON - for bubble motor ON is 0 because the transistor used.
     else 
+    // FAN
         gpio_put(output_gpio, 1);
-    gpio_put(led_gpio, 1);     // Turn LED ON
-    sleep_ms(ACTIVE_DURATION_MS);
 
+    gpio_put(led_gpio, 1);          // Turn LED ON
+    sleep_ms(ACTIVE_DURATION_MS);   // stay on for active duration
+
+    // BUBBLE
     if (output_gpio == BUBBLE_OUTPUT)
-        gpio_put(output_gpio, 1);  // Turn device ON - for bubble motor ON is 0 because the transistor used.
+        gpio_put(output_gpio, 1);  // Turn device ON - for bubble motor OFF is 1 because the transistor used.
     else 
+    // FAN
         gpio_put(output_gpio, 0);
 
-        gpio_put(led_gpio, 0);     // Turn LED OFF  
+    gpio_put(led_gpio, 0);     // Turn LED OFF  
 }
 
 int main() {
