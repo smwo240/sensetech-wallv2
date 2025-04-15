@@ -1,3 +1,10 @@
+/*
+ *  File:           pwm-test.c 
+    Description:    Test file for implementing pwm features into the light module and vibration module.
+                    GitHub history contains many different testing files that were used to implement new feature
+                    without implementing them into the final code file.
+ */
+
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/timer.h"
@@ -46,6 +53,7 @@
 bool btn_active[8] = {false, false, false, false, false, false, false, false};
 
 // increment notes as number of active buttons present
+// UNUSED - stalled the program execution
 void button_press_sound() {
     // count active buttons
     uint count = 0;
@@ -134,6 +142,8 @@ else if (gpio == BTN8_PIN) {
 
 int main()
 {
+    int period;
+
     stdio_init_all();
 
     // initialize tfplayer
@@ -147,8 +157,7 @@ int main()
 
     // BTN1_LED_PIN
     gpio_init(BTN1_LED_PIN);
-    gpio_set_dir(BTN1_LED_PIN, GPIO_OUT);
-    
+    gpio_set_function(BTN1_LED_PIN, GPIO_FUNC_PWM);
     // BTN1_PIN
     gpio_init(BTN1_PIN);
     gpio_set_dir(BTN1_PIN,GPIO_IN);
@@ -157,7 +166,7 @@ int main()
 
     // BTN2_LED_PIN
     gpio_init(BTN2_LED_PIN);
-    gpio_set_dir(BTN2_LED_PIN, GPIO_OUT);
+    gpio_set_function(BTN2_LED_PIN, GPIO_FUNC_PWM);
     //BTN2_PIN
     gpio_init(BTN2_PIN);
     gpio_set_dir(BTN2_PIN, GPIO_IN);
@@ -166,7 +175,7 @@ int main()
 
     // BTN3_LED_PIN
     gpio_init(BTN3_LED_PIN);
-    gpio_set_dir(BTN3_LED_PIN, GPIO_OUT);
+    gpio_set_function(BTN3_LED_PIN, GPIO_FUNC_PWM);
     // BTN3_PIN
     gpio_init(BTN3_PIN);
     gpio_set_dir(BTN3_PIN, GPIO_IN);
@@ -175,7 +184,7 @@ int main()
 
     // BTN4_LED_PIN
     gpio_init(BTN4_LED_PIN);
-    gpio_set_dir(BTN4_LED_PIN, GPIO_OUT);
+    gpio_set_function(BTN4_LED_PIN, GPIO_FUNC_PWM);
     // BTN4_PIN
     gpio_init(BTN4_PIN);
     gpio_set_dir(BTN4_PIN, GPIO_IN);
@@ -184,7 +193,7 @@ int main()
 
     // BTN5_LED_PIN
     gpio_init(BTN5_LED_PIN);
-    gpio_set_dir(BTN5_LED_PIN, GPIO_OUT);
+    gpio_set_function(BTN5_LED_PIN, GPIO_FUNC_PWM);
     // BTN5_PIN
     gpio_init(BTN5_PIN);
     gpio_set_dir(BTN5_PIN, GPIO_IN);
@@ -193,7 +202,7 @@ int main()
 
     // BTN6_LED_PIN
     gpio_init(BTN6_LED_PIN);
-    gpio_set_dir(BTN6_LED_PIN, GPIO_OUT);
+    gpio_set_function(BTN6_LED_PIN, GPIO_FUNC_PWM);
     // BTN6_PIN
     gpio_init(BTN6_PIN);
     gpio_set_dir(BTN6_PIN, GPIO_IN);
@@ -202,7 +211,7 @@ int main()
 
     // BTN7_LED_PIN
     gpio_init(BTN7_LED_PIN);
-    gpio_set_dir(BTN7_LED_PIN, GPIO_OUT);
+    gpio_set_function(BTN7_LED_PIN, GPIO_FUNC_PWM);
     // BTN7_PIN
     gpio_init(BTN7_PIN);
     gpio_set_dir(BTN7_PIN, GPIO_IN);
@@ -211,7 +220,7 @@ int main()
 
     // BTN8_LED_PIN
     gpio_init(BTN8_LED_PIN);
-    gpio_set_dir(BTN8_LED_PIN, GPIO_OUT);
+    gpio_set_function(BTN8_LED_PIN, GPIO_FUNC_PWM);
     // BTN8_PIN
     gpio_init(BTN8_PIN);
     gpio_set_dir(BTN8_PIN, GPIO_IN);
@@ -219,6 +228,19 @@ int main()
     gpio_set_irq_enabled(BTN8_PIN, GPIO_IRQ_EDGE_FALL, true);
 
     #pragma endregion
+
+    // set clkdiv for all LED GPIO
+    // 12 -> 30 KHz 
+    pwm_set_clkdiv(pwm_gpio_to_slice_num(BTN1_LED_PIN), 12);
+    pwm_set_clkdiv(pwm_gpio_to_slice_num(BTN2_LED_PIN), 12);
+    pwm_set_clkdiv(pwm_gpio_to_slice_num(BTN3_LED_PIN), 12);
+    pwm_set_clkdiv(pwm_gpio_to_slice_num(BTN4_LED_PIN), 12);
+    pwm_set_clkdiv(pwm_gpio_to_slice_num(BTN5_LED_PIN), 12);
+    pwm_set_clkdiv(pwm_gpio_to_slice_num(BTN6_LED_PIN), 12);
+    pwm_set_clkdiv(pwm_gpio_to_slice_num(BTN7_LED_PIN), 12);
+    pwm_set_clkdiv(pwm_gpio_to_slice_num(BTN8_LED_PIN), 12);
+
+    period = 1250;
 
     // loop to model simple behavior.
     uint32_t position = 1; // position of "light" moving from button to button in circular pattern
@@ -228,7 +250,7 @@ int main()
     while (true) {
         if (!btn_active[position]) {
             // turn off previous position 
-            gpio_put(position, false);
+            pwm_set_gpio_level(position, period*0);
 
             // do direction swap function - future implmentation
         }
@@ -239,7 +261,8 @@ int main()
             position = (position - 1 + 8) % 8; } // iterate counterclockwise (substitute for -1 % 8 = 7)
 
         // light up new position
-        gpio_put(position, true);
+
+        pwm_set_gpio_level(position, period*(0.50 * (float)(1 + gpio_get(MODE_SEL)))); //gpio_put(position, true);
 
         /*========= Check if button is active at new position ========= */
         if (btn_active[position]) {
@@ -255,7 +278,7 @@ int main()
                 gpio_put(position, i % 2 == 0 );
                 sleep_ms(150);
             }
-            gpio_put(position,true); // backup turn button back on
+            pwm_set_gpio_level(position, period*(0.50 * (float)(1 + gpio_get(MODE_SEL)))); //gpio_put(position,true); // backup turn button back on
         }
         else {
             // do nothing, continue to next loop

@@ -90,7 +90,7 @@ int main()
     adc_gpio_init(INPUT_POT_ADC);
     adc_select_input(0);
 
-    // set clock divider to 4, then frequency is 125/4 = 31.25 MHz
+    // set clock divider to 4, then frequency is 15.625 MHz (125 MHz / 2^(4-1))
     // Minimize this to reduce power consumption.
     pwm_set_clkdiv(slice0_num, 4);
     pwm_set_clkdiv(slice1_num, 4);
