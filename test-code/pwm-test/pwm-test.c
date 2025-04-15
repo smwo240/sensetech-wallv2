@@ -1,9 +1,14 @@
+<<<<<<< HEAD
 /*
  *  File:           pwm-test.c 
     Description:    Test file for implementing pwm features into the light module and vibration module.
                     GitHub history contains many different testing files that were used to implement new feature
                     without implementing them into the final code file.
  */
+=======
+//Updated PWM test specifically used on light module to ensure all light and sound user interfaces work properly. 
+
+>>>>>>> b3617ce367b3002f38151e104f8ef3733ec27149
 
 #include <stdio.h>
 #include "pico/stdlib.h"

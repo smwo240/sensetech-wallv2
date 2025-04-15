@@ -1,3 +1,8 @@
+//This test code is used to ensure that the battery subsystem works within the light module and can run for 8+ hrs as described in the ER for our team.
+//Near the end of the code, there is a block to power on the lights indefinitely, which was used to test the duration of battery length. 
+//In the current iteration of the air module, the test for the battery passes. 
+
+
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"

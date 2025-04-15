@@ -1,3 +1,7 @@
+//This code was used to test the functionality of the battery subsystem used within the air module. This code keeps the fan running indefinitely until the 
+//user uses the button to stop the test. The purpose of this test is to ensure that the fan will run for 8+ hrs straight to meet an ER set by our team. 
+//In the current iteration of the air module, the battery passed the necessary test to satisfy the threshold set by our ER. 
+
 #include <stdio.h>
 #include "pico/stdlib.h"
 
