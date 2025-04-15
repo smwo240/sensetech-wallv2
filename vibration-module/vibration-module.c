@@ -1,3 +1,16 @@
+/*
+ * File:            vibration-module.c
+ * Description:     The main code used to run the functionality of the vibration module as specified.
+ * Parameters:      GPIO definitions - the GP# used for the pin where the device is connected to or controlled by the board.
+ *                  R# - values used to define the start and end positions of the ranges where the input will change the output.
+ *                  MAX_BTWN - the LEDs progressively increase in brightness along with the position of the pushbutton. This determines the MAX brightness
+ *                             that the LED can be before going to a 100% brightness when the R# threshhold is passed.
+ *                  NUM_STATES - the number of states in the pulse mode. Higher # = smoother transitions between states. 
+ *                               If this is modified the arrays holding corresponding values need to be modified as well.
+ * Functionality:   Button presses activate the GPIO outputs that control either the fan or bubble motor devices.
+ *                  Use the parameters to control time set to ON and to control switch debounce.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

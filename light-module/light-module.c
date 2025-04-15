@@ -1,3 +1,13 @@
+/*
+ * File:            light-module.c
+ * Description:     The main code used to run the functionality of the light module as specified.
+ * Parameters:      GPIO definitions - the GP# used for the pin where the device is connected to or controlled by the board.
+ * Function:        Consists of a game that holds an value in a variable for the current position of a light moving in a circle.
+ *                  Pressing a button on the face marks it as "active" and when the pattern reaches that button position# it switches
+ *                  the direction of this pattern and "deactives" it.               
+ *
+ */
+
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/timer.h"

@@ -1,3 +1,13 @@
+/*
+ * File:            air-module.c
+ * Description:     The main code used to run the functionality of the air module as specified.
+ * Parameters:      GPIO definitions - the GP# used for the pin where the device is connected to or controlled by the board.
+ *                  ACTIVE_DURATION_MS - time the devices will be ON when prompted, in ms.
+ *                  DEBOUNCE_MS - used to eliminate additional presses caused by switch bounce on open/close.
+ * Functionality:   Button presses activate the GPIO outputs that control either the fan or bubble motor devices.
+ *                  Use the parameters to control time set to ON and to control switch debounce.
+ */
+
 #include <stdio.h>
 #include "pico/stdlib.h"
 
@@ -14,7 +24,7 @@
 #define DEBOUNCE_MS 200
 
 bool is_pressed(uint gpio) {
-    return gpio_get(gpio) == 0;
+    return gpio_get(gpio) == 0;-
 }
 
 void run_device(uint output_gpio, uint led_gpio) {

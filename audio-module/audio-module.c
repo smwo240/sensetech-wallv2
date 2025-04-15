@@ -1,3 +1,10 @@
+/*
+ * File:            audio-module.case
+ * Description:     The main code used to run the functionality of the audio module as specified.
+ * Parameters:      GPIO definitions - the GP# used for the pin where the device is connected to or controlled by the board.
+ * Functionality:   Pressing a button on the face marks it as "active" while the output sound is playing.  
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -18,7 +25,6 @@
 #define BTN7_LED_PIN 26
 #define BTN8_LED_PIN 27
 const uint LED_PINS[8] = {BTN1_LED_PIN, BTN2_LED_PIN, BTN3_LED_PIN, BTN4_LED_PIN, BTN5_LED_PIN, BTN6_LED_PIN, BTN7_LED_PIN, BTN8_LED_PIN};
-
 
 // BUTTON GPIO
 #define BTN1_PIN 2
