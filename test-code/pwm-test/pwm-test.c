@@ -1,3 +1,6 @@
+//Updated PWM test specifically used on light module to ensure all light and sound user interfaces work properly. 
+
+
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/timer.h"
