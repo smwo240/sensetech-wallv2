@@ -3,6 +3,7 @@ COMMONLY USED CODE:
 
 # MicroPython notes (DISCONTINUED, only affects following two functions, USING C/C++)
 # Make sure to have Micro-Pico extenstion installed on VS Code: https://marketplace.visualstudio.com/items?itemName=paulober.pico-w-go
+# Updated final test code is placed in a seperate folder in our repo.
 
 "import time": every single program will need to import a clock, regardless of function. 
 "from machine import ADC/Pin, PWM": If ADC, import ADC from machine. If using PWM, import Pin, PWM. 
