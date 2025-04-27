@@ -26,7 +26,7 @@
 
 
 bool is_pressed(uint gpio) {
-    return gpio_get(gpio) == 0;-
+    return gpio_get(gpio) == 0;
 }
 
 void run_device(uint output_gpio, uint led_gpio) {
