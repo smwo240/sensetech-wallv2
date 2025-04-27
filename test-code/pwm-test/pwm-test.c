@@ -1,14 +1,10 @@
-<<<<<<< HEAD
 /*
  *  File:           pwm-test.c 
     Description:    Test file for implementing pwm features into the light module and vibration module.
                     GitHub history contains many different testing files that were used to implement new feature
                     without implementing them into the final code file.
+    Notes: This doesn't work. I tried different PWM settings but no output is ever seen on the buttons.
  */
-=======
-//Updated PWM test specifically used on light module to ensure all light and sound user interfaces work properly. 
-
->>>>>>> b3617ce367b3002f38151e104f8ef3733ec27149
 
 #include <stdio.h>
 #include "pico/stdlib.h"
@@ -57,6 +53,8 @@
 // one off of btn# because of initial oversights  btn# = index + 1
 bool btn_active[8] = {false, false, false, false, false, false, false, false};
 
+int period; // used for PWM
+
 // increment notes as number of active buttons present
 // UNUSED - stalled the program execution
 void button_press_sound() {
@@ -87,56 +85,56 @@ void gpio_callback(uint gpio, uint32_t events) {
         mp3_play_sound(C5); // play activation sound
         }
         
-    gpio_put(BTN1_LED_PIN, true);
+        pwm_set_gpio_level(BTN1_LED_PIN, period*(0.50 * (float)(1 + gpio_get(MODE_SEL))));
 } 
 else if (gpio == BTN2_PIN) {
     if (!btn_active[1]) {
         btn_active[1] = true;
         mp3_play_sound(D5);   // play activation sound
     }
-    gpio_put(BTN2_LED_PIN, true);
+    pwm_set_gpio_level(BTN2_LED_PIN, period*(0.50 * (float)(1 + gpio_get(MODE_SEL))));
 }
 else if (gpio == BTN3_PIN) {
     if (!btn_active[2]) {
         btn_active[2] = true;
         mp3_play_sound(E5);// play activation sound
     }
-    gpio_put(BTN3_LED_PIN, true);
+    pwm_set_gpio_level(BTN3_LED_PIN, period*(0.50 * (float)(1 + gpio_get(MODE_SEL))));
 }
 else if (gpio == BTN4_PIN) {
     if (!btn_active[3]) {
         btn_active[3] = true;
         mp3_play_sound(F5); // play activation sound
     }
-    gpio_put(BTN4_LED_PIN, true);
+    pwm_set_gpio_level(BTN4_LED_PIN, period*(0.50 * (float)(1 + gpio_get(MODE_SEL))));
 }
 else if (gpio == BTN5_PIN) {
     if (!btn_active[4]) {
         btn_active[4] = true;
         mp3_play_sound(G5);// play activation sound
     }
-    gpio_put(BTN5_LED_PIN, true);
+    pwm_set_gpio_level(BTN5_LED_PIN, period*(0.50 * (float)(1 + gpio_get(MODE_SEL))));
 }
 else if (gpio == BTN6_PIN) {
     if (!btn_active[5]) {
         btn_active[5] = true;
         mp3_play_sound(A5); // play activation sound
     }
-    gpio_put(BTN6_LED_PIN, true);
+    pwm_set_gpio_level(BTN6_LED_PIN, period*(0.50 * (float)(1 + gpio_get(MODE_SEL))));
 }
 else if (gpio == BTN7_PIN) {
     if (!btn_active[6]) {
         btn_active[6] = true;
         mp3_play_sound(B5);// play activation sound
     }
-    gpio_put(BTN7_LED_PIN, true);
+    pwm_set_gpio_level(BTN7_LED_PIN, period*(0.50 * (float)(1 + gpio_get(MODE_SEL))));
 }
 else if (gpio == BTN8_PIN) {
     if (!btn_active[7]) {
         btn_active[7] = true;
         mp3_play_sound(C6); // play activation sound
     }
-    gpio_put(BTN8_LED_PIN, true);
+    pwm_set_gpio_level(BTN8_LED_PIN, period*(0.50 * (float)(1 + gpio_get(MODE_SEL))));
 }
     else {
         // error, shouldn't be possible with hardware
@@ -147,7 +145,7 @@ else if (gpio == BTN8_PIN) {
 
 int main()
 {
-    int period;
+    //int period;
 
     stdio_init_all();
 
@@ -245,7 +243,7 @@ int main()
     pwm_set_clkdiv(pwm_gpio_to_slice_num(BTN7_LED_PIN), 12);
     pwm_set_clkdiv(pwm_gpio_to_slice_num(BTN8_LED_PIN), 12);
 
-    period = 1250;
+    period = 346;
 
     // loop to model simple behavior.
     uint32_t position = 1; // position of "light" moving from button to button in circular pattern
@@ -267,7 +265,7 @@ int main()
 
         // light up new position
 
-        pwm_set_gpio_level(position, period*(0.50 * (float)(1 + gpio_get(MODE_SEL)))); //gpio_put(position, true);
+        pwm_set_gpio_level(position, period*(1.0)); //gpio_put(position, true);
 
         /*========= Check if button is active at new position ========= */
         if (btn_active[position]) {
