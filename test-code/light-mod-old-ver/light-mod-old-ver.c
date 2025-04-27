@@ -38,6 +38,36 @@
 // one off of btn# because of initial oversights  btn# = index + 1
 bool btn_active[8] = {false, false, false, false, false, false, false, false};
 
+uint count;
+
+// increment notes as number of active buttons present
+void button_press_sound() {
+
+    if (gpio_get(MODE_SEL)) // slow mode - no sound
+        return;
+
+    // count active buttons
+    uint count = 0;
+    for (int i = 0; i < 8; i++) {
+        if (btn_active[i] == true)
+            count++;
+    }
+    // count should be at least 1
+    
+    switch (count) {
+        case 1: mp3_play_sound(C5); break;
+        case 2: mp3_play_sound(D5); break;
+        case 3: mp3_play_sound(E5); break;
+        case 4: mp3_play_sound(F5); break;
+        case 5: mp3_play_sound(G5); break;
+        case 6: mp3_play_sound(A5); break; 
+        case 7: mp3_play_sound(B5); break;
+        default: // do nothing 
+        break;
+    }
+    return;
+}
+
 void gpio_callback(uint gpio, uint32_t events) {
     // Interrupt routines for when a button is pressed on the face plate.
     // printf("test \r\n");
@@ -110,28 +140,6 @@ else if (gpio == BTN8_PIN) {
         // debug - light up all lights for 2 s
 
     }
-}
-
-// increment notes as number of active buttons present
-void button_press_sound() {
-    // count active buttons
-    uint count = 0;
-    for (int i = 0; i < 8; i++) {
-        if (btn_active[i] == true)
-            count++;
-    }
-    // count should be at least 1
-    switch (count) {
-        case 1: mp3_play_sound(C5);
-        case 2: mp3_play_sound(D5);
-        case 3: mp3_play_sound(E5);
-        case 4: mp3_play_sound(F5);
-        case 5: mp3_play_sound(G5);
-        case 6: mp3_play_sound(A5);
-        case 7: mp3_play_sound(B5);
-        default: // do nothing
-    }
-    return;
 }
 
 int main()
@@ -217,6 +225,10 @@ int main()
     gpio_pull_up(BTN8_PIN);
     gpio_set_irq_enabled(BTN8_PIN, GPIO_IRQ_EDGE_FALL, true);
 
+    // mode switch
+    gpio_init(MODE_SEL);
+    gpio_set_dir(MODE_SEL, GPIO_IN);
+    gpio_pull_up(MODE_SEL);
 
     // loop to model simple behavior.
     uint32_t position = 1; // position of "light" moving from button to button in circular pattern
@@ -247,7 +259,9 @@ int main()
             clockwise = !clockwise; // toggle direction
             btn_active[position] = false;
 
-            mp3_play_sound(CRASH); // collision sound
+            if (!gpio_get(MODE_SEL)) // if MODE_SEL == 1 : slow mode - muted
+                mp3_play_sound(CRASH); // collision sound
+
             // button starts ON if collision occurs
             for (int i = 1; i < 5; i++) {
                 gpio_put(position, i % 2 == 0 );
@@ -259,10 +273,14 @@ int main()
             // do nothing, continue to next loop
         }
 
-        if (gpio_get(MODE_SEL))
-            sleep_ms(400); // speed of the rotation pattern
-        else   
+        if (gpio_get(MODE_SEL)) {
+            sleep_ms(450); // speed of the rotation pattern
+            mp3_set_volume(0); // muted
+        }
+        else   {
             sleep_ms(300);
+            mp3_set_volume(15);
+        }
 
     }
 }

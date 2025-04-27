@@ -40,9 +40,6 @@ add_executable(light-mod-old-ver light-mod-old-ver.c mp3.c)
 pico_set_program_name(light-mod-old-ver "light-mod-old-ver")
 pico_set_program_version(light-mod-old-ver "0.1")
 
-# Generate PIO header
-pico_generate_pio_header(light-mod-old-ver ${CMAKE_CURRENT_LIST_DIR}/blink.pio)
-
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(light-mod-old-ver 0)
 pico_enable_stdio_usb(light-mod-old-ver 1)
