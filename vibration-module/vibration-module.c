@@ -26,6 +26,10 @@
 #define OUTPUT_MOTORCTRL_GPIO 16
 #define MODE_SEL_GPIO 19
 
+// MUTE Functionality (GPIO#)
+#define MUTE_BTN 8
+#define MUTE_LED 7
+
 // GPIO Mapping for Set of LEDs
 #define LED1_GPIO 1
 #define LED2_GPIO 2
@@ -63,7 +67,15 @@ int main()
     mp3_set_volume(16);
     mp3_query_status();
     #pragma endregion
-    
+
+    // Volume Control GPIO
+    gpio_init(MUTE_BTN); // connected from GPIO to GND
+    gpio_set_dir(MUTE_BTN, GPIO_IN);
+    gpio_pull_up(MUTE_BTN); // open - 1, closed - 0
+
+    gpio_init(MUTE_LED);
+    gpio_set_dir(MUTE_LED,GPIO_OUT);
+
     // mode select connected to GP19 and GND - closed circuit connects to gnd, open is vcc
     gpio_init(MODE_SEL_GPIO);
     gpio_set_dir(MODE_SEL_GPIO, GPIO_IN);
@@ -126,6 +138,16 @@ int main()
         result = adc_read(); // 12-bit value from 0-3.3V -> 0-4096 int
         printf("%d", result); // debug adc result
 
+        // Volume Control
+        if (gpio_get(MUTE_BTN)) {
+            mp3_set_volume(0);
+            gpio_put(MUTE_LED,true);
+        }
+        else  {
+            mp3_set_volume(16);
+            gpio_put(MUTE_LED,false);
+        }
+
         // Use state of mode select to determine behavior
         if (gpio_get(MODE_SEL_GPIO)) {
             // PUSH MODE - VB STRENGTH DETERMINED BY POT POSITION
@@ -134,9 +156,9 @@ int main()
             if ((result/4096.0) >= R3) {    
                 // GPIO
                 pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO, period); // Motor Duty Cycle
-                pwm_set_gpio_level(LED1_GPIO, period); // full
-                pwm_set_gpio_level(LED2_GPIO, period); // full
                 pwm_set_gpio_level(LED3_GPIO, period); // full
+                pwm_set_gpio_level(LED2_GPIO, period); // full
+                pwm_set_gpio_level(LED1_GPIO, period); // full
                 // AUDIO - detect change in vibration level and play sound
                 if (push_state != 3) mp3_play_sound(C5);
                 push_state = 3; // set vibration level state to 3
@@ -146,9 +168,9 @@ int main()
             else if ((result/4096.0) >= R2) {
                 pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO, 0.75*period); // Motor Duty Cycle
                 // MIN_IN: R2, MAX_IN: R3, MIN_OUT: 0, MAX_OUT: MAX_BTWN
-                pwm_set_gpio_level(LED1_GPIO, norm((result/4096.0),R2,R3)*period); // linear transform onto .37 to .70
+                pwm_set_gpio_level(LED3_GPIO, norm((result/4096.0),R2,R3)*period); // linear transform onto .37 to .70
                 pwm_set_gpio_level(LED2_GPIO, period); // full
-                pwm_set_gpio_level(LED3_GPIO, period); // full
+                pwm_set_gpio_level(LED1_GPIO, period); // full
                 // AUDIO - detect change in vibration level and play sound
                 if (push_state != 2) mp3_play_sound(D5);
                 push_state = 2; // set vibration level state to 2
@@ -157,10 +179,10 @@ int main()
             // STATE 1: 0.5 DUTY CYCLE MOTOR, LED3 FULL, LED2 VARIABLE, LED1 OFF
             else if ((result/4096.0) >= R1) {
                 pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO, 0.50*period); // Motor Duty Cycle
-                pwm_set_gpio_level(LED1_GPIO, 0.0); // off
+                pwm_set_gpio_level(LED3_GPIO, 0.0); // off
                 // MIN_IN: R1, MAX_IN: R2, MIN_OUT: 0, MAX_OUT: MAX_BTWN
                 pwm_set_gpio_level(LED2_GPIO, norm((result/4096.0),R1,R2)*period); // linear transform onto .18 to .37
-                pwm_set_gpio_level(LED3_GPIO, period); // full
+                pwm_set_gpio_level(LED1_GPIO, period); // full
                 // AUDIO - detect change in vibration level and play sound
                 if (push_state != 1) mp3_play_sound(E5);
                 push_state = 1; // set vibration level state
@@ -169,14 +191,19 @@ int main()
             // STATE 0: MOTOR OFF, LED3 VARIABLE, LED2LED1 OFF
             else {
                 pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO, 0.0); // Motor off
-                pwm_set_gpio_level(LED1_GPIO, 0); // off
+                pwm_set_gpio_level(LED3_GPIO, 0); // off
                 pwm_set_gpio_level(LED2_GPIO, 0.0); // off
                 // MIN_IN: R0, MAX_IN: R1, MIN_OUT: 0, MAX_OUT: MAX_BTWN
-                pwm_set_gpio_level(LED3_GPIO, norm((result/4096.0),0,R1)*period);
+                pwm_set_gpio_level(LED1_GPIO, norm((result/4096.0),0,R1)*period);
                 // AUDIO - detect change in vibration level and play sound
                 if (push_state != 0) mp3_play_sound(F5);
                 push_state = 0; // set vibration level state
-                idle_count++; // start counting # states where idle
+    
+                if ((result/4096.0) < 0.06)
+                    idle_count++;
+                else   
+                    idle_count = 0;
+
             }
 
             // IDLE CHECK - turn LEDs on to show power state when idle
@@ -194,8 +221,12 @@ int main()
             pwm_set_gpio_level(LED1_GPIO,led_levels[0][state]*period);
             pwm_set_gpio_level(LED2_GPIO,led_levels[1][state]*period);
             pwm_set_gpio_level(LED3_GPIO,led_levels[2][state]*period);
-            // Motor Cycle
-            pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO,vals_period[state]);
+
+            // Motor Cycle - less force when button not pressed
+            if ((result/4096.0) >= 0.10)
+                pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO,vals_period[state]);
+            else
+                pwm_set_gpio_level(OUTPUT_MOTORCTRL_GPIO,0.65*vals_period[state]);
 
             // sleep_ms(100); // Was previously 400 ms for a 6 state cycle - decreased to 200 ms for 12 state cycle
         
@@ -217,7 +248,7 @@ int main()
                 mp3_play_sound(D5);
             else if (state == 4)
                 mp3_play_sound(E5);
-            else if (state == 5)
+            else if (state == 6)
                 mp3_play_sound(F5);
             else if (state == 8)
                 mp3_play_sound(E5);
