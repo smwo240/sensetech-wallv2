@@ -22,6 +22,8 @@
 
 #define ACTIVE_DURATION_MS 5000
 #define DEBOUNCE_MS 200
+#define FAN_AUTO_OFF_MS 30000 // 30 seconds
+
 
 bool is_pressed(uint gpio) {
     return gpio_get(gpio) == 0;-
@@ -51,6 +53,8 @@ void run_device(uint output_gpio, uint led_gpio) {
 int main() {
     stdio_init_all();
     bool fan_on = false;
+    bool fan_blinking = false;
+    absolute_time_t fan_on_time;
 
     // Initialize GPIOs
     #pragma region init
@@ -88,39 +92,70 @@ int main() {
 
     // gpio_put(BUBBLE_OUTPUT, 1);
 
-    while (true) {
-       // Check fan button
+while (true) {
+    // Check fan button
     if (is_pressed(FAN_BUTTON)) {
-        if (is_pressed(FAN_BUTTON)) {
-            if (!fan_on) {
-                gpio_put(FAN_OUTPUT, 1);  // Turn fan ON
-                gpio_put(FAN_LED, 1);     // Turn LED ON
-                fan_on = true;
-            } else {
-                gpio_put(FAN_OUTPUT, 0);  // Turn fan OFF
-                gpio_put(FAN_LED, 0);     // Turn LED OFF
-                fan_on = false;
-            }
-            while (is_pressed(FAN_BUTTON)) {
-                sleep_ms(10);
+        if (!fan_on) {
+            gpio_put(FAN_OUTPUT, 1);
+            gpio_put(FAN_LED, 1);
+            fan_on = true;
+            fan_blinking = false;
+            fan_on_time = get_absolute_time();
+        } else {
+            gpio_put(FAN_OUTPUT, 0);
+            gpio_put(FAN_LED, 0);
+            fan_on = false;
+            fan_blinking = false;
         }
-            sleep_ms(DEBOUNCE_MS);
+        while (is_pressed(FAN_BUTTON)) {
+            sleep_ms(10);
+        }
+        sleep_ms(DEBOUNCE_MS);
     }
-}
-}
 
     // Check bubble blower button
-if (is_pressed(BUBBLE_BUTTON)) {
-    run_device(BUBBLE_OUTPUT, BUBBLE_LED);
+    if (is_pressed(BUBBLE_BUTTON)) {
+        run_device(BUBBLE_OUTPUT, BUBBLE_LED);
         while (is_pressed(BUBBLE_BUTTON)) {
             sleep_ms(10);
+        }
+        sleep_ms(DEBOUNCE_MS);
     }
-    sleep_ms(DEBOUNCE_MS); // Debounce after release
+
+    // Fan auto-off and blinking
+    if (fan_on) {
+        int64_t fan_runtime_us = absolute_time_diff_us(fan_on_time, get_absolute_time());
+
+        // Start blinking after 25s
+        if (fan_runtime_us > (FAN_AUTO_OFF_MS - 5000) * 1000 && fan_runtime_us < FAN_AUTO_OFF_MS * 1000) {
+            fan_blinking = true;
+        }
+
+        // Auto turn off after 30s
+        if (fan_runtime_us > FAN_AUTO_OFF_MS * 1000) {
+            gpio_put(FAN_OUTPUT, 0);
+            gpio_put(FAN_LED, 0);
+            fan_on = false;
+            fan_blinking = false;
+        }
+    }
+
+    // Handle LED blinking
+    if (fan_blinking) {
+        static bool led_state = false;
+        static absolute_time_t last_blink_time = {0};
+
+        if (absolute_time_diff_us(last_blink_time, get_absolute_time()) > 500 * 1000) { // 500ms
+            led_state = !led_state;
+            gpio_put(FAN_LED, led_state);
+            last_blink_time = get_absolute_time();
+        }
+    }
+
+    sleep_ms(100); // light CPU sleep
 }
 
 
-    sleep_ms(100); // Light delay to reduce CPU usage
-}
 
     return 0;
 }
