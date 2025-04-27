@@ -50,6 +50,7 @@ void run_device(uint output_gpio, uint led_gpio) {
 
 int main() {
     stdio_init_all();
+    bool fan_on = false;
 
     // Initialize GPIOs
     #pragma region init
@@ -88,24 +89,38 @@ int main() {
     // gpio_put(BUBBLE_OUTPUT, 1);
 
     while (true) {
-        // Check fan button
+       // Check fan button
+    if (is_pressed(FAN_BUTTON)) {
         if (is_pressed(FAN_BUTTON)) {
-            sleep_ms(DEBOUNCE_MS);
-            if (is_pressed(FAN_BUTTON)) {
-                run_device(FAN_OUTPUT, FAN_LED);
+            if (!fan_on) {
+                gpio_put(FAN_OUTPUT, 1);  // Turn fan ON
+                gpio_put(FAN_LED, 1);     // Turn LED ON
+                fan_on = true;
+            } else {
+                gpio_put(FAN_OUTPUT, 0);  // Turn fan OFF
+                gpio_put(FAN_LED, 0);     // Turn LED OFF
+                fan_on = false;
             }
+            while (is_pressed(FAN_BUTTON)) {
+                sleep_ms(10);
         }
-
-        // Check bubble blower button
-        if (is_pressed(BUBBLE_BUTTON)) {
             sleep_ms(DEBOUNCE_MS);
-            if (is_pressed(BUBBLE_BUTTON)) {
-                run_device(BUBBLE_OUTPUT, BUBBLE_LED);
-            }
-        }
-
-        sleep_ms(100); // Light delay to reduce CPU usage
     }
+}
+}
+
+    // Check bubble blower button
+if (is_pressed(BUBBLE_BUTTON)) {
+    run_device(BUBBLE_OUTPUT, BUBBLE_LED);
+        while (is_pressed(BUBBLE_BUTTON)) {
+            sleep_ms(10);
+    }
+    sleep_ms(DEBOUNCE_MS); // Debounce after release
+}
+
+
+    sleep_ms(100); // Light delay to reduce CPU usage
+}
 
     return 0;
 }
