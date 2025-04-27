@@ -54,6 +54,7 @@ int main()
 {
     int state, period;
     int push_state;
+    int idle_count;
     uint16_t result;
 
     #pragma region audio
@@ -118,6 +119,7 @@ int main()
     };
     state = 0;
     push_state = 0;
+    idle_count = 100; // default to idling
 
     while (1) 
     {
@@ -138,6 +140,7 @@ int main()
                 // AUDIO - detect change in vibration level and play sound
                 if (push_state != 3) mp3_play_sound(C5);
                 push_state = 3; // set vibration level state to 3
+                idle_count = 0; // set to NOT IDLE
             }
             // STATE 2: 0.75 DUTY CYCLE MOTOR, LED2LED3 FULL, LED1 VARIABLE
             else if ((result/4096.0) >= R2) {
@@ -149,6 +152,7 @@ int main()
                 // AUDIO - detect change in vibration level and play sound
                 if (push_state != 2) mp3_play_sound(D5);
                 push_state = 2; // set vibration level state to 2
+                idle_count = 0; // set to NOT IDLE
             }
             // STATE 1: 0.5 DUTY CYCLE MOTOR, LED3 FULL, LED2 VARIABLE, LED1 OFF
             else if ((result/4096.0) >= R1) {
@@ -160,6 +164,7 @@ int main()
                 // AUDIO - detect change in vibration level and play sound
                 if (push_state != 1) mp3_play_sound(E5);
                 push_state = 1; // set vibration level state
+                idle_count = 0; // set to NOT IDLE
             }
             // STATE 0: MOTOR OFF, LED3 VARIABLE, LED2LED1 OFF
             else {
@@ -171,7 +176,16 @@ int main()
                 // AUDIO - detect change in vibration level and play sound
                 if (push_state != 0) mp3_play_sound(F5);
                 push_state = 0; // set vibration level state
+                idle_count++; // start counting # states where idle
             }
+
+            // IDLE CHECK - turn LEDs on to show power state when idle
+            if (idle_count >= 100) {
+                pwm_set_gpio_level(LED3_GPIO, period); // full
+                pwm_set_gpio_level(LED2_GPIO, period); // full
+                pwm_set_gpio_level(LED1_GPIO, period); // full
+            }
+
             sleep_ms(100); // push mode - 100 ms cycle
         }
         else {
