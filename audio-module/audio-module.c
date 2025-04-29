@@ -175,6 +175,15 @@ int main()
 
     gpio_put(RED_LED_PIN, true);
 
+    // update volume
+    adc = adc_read();
+    uint16_t adc_to_volume = ((4096 - adc) / 4096.0) * 30;
+    volume = adc_to_volume;
+    mp3_set_volume(volume);
+    // update mute
+    if (volume == 0) gpio_put(MUTE_LED_PIN, true);
+    else gpio_put(MUTE_LED_PIN, false);
+
     while (true) {
         if (btn_active[0] == true && (time_us_64() - btn_time[0] >= DELAY_US)) {
             btn_active[0] = false;
@@ -198,18 +207,18 @@ int main()
             btn_active[6] = false;
         }
         if (btn_active[7] == true && (time_us_64() - btn_time[7] >= DELAY_US)) {
-            // mute (?)
+            
 
             btn_active[7] = false;
         }
 
         adc = adc_read();
-        uint16_t adc_to_volume = (adc / 4096.0) * 30;
+        adc_to_volume = ((4096 - adc) / 4096.0) * 30;
         if (adc_to_volume != volume) {
             volume = adc_to_volume;
             mp3_set_volume(volume);
             
-            if (volume == 0) gpio_put(MUTE_LED_PIN, true);
+            if (volume <= 1) gpio_put(MUTE_LED_PIN, true);
             else gpio_put(MUTE_LED_PIN, false);
         }
 
